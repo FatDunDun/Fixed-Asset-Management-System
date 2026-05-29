@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>汉中电信固定资产管理系统</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons for modern aesthetic -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="light-theme">
+    <!-- Decorative Glowing Backdrops -->
+    <div class="blob-glow blob-purple"></div>
+    <div class="blob-glow blob-cyan"></div>
+    <div class="blob-glow blob-orange"></div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- 1. AUTHENTICATION SECTION (Login / Register) -->
+    <div id="auth-section" class="auth-section">
+        <div class="auth-card glassmorphism">
+            <div class="auth-header">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-boxes-stacked logo-icon"></i>
+                    <span>汉中电信</span>
+                </div>
+                <h2>固定资产管理系统</h2>
+                <p id="auth-subtitle">轻松掌控您的企业固定资产</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form active">
+                <div class="form-group">
+                    <label for="login-username"><i class="fa-solid fa-user"></i> 用户名</label>
+                    <input type="text" id="login-username" placeholder="请输入用户名" required minlength="3">
+                </div>
+                <div class="form-group">
+                    <label for="login-password"><i class="fa-solid fa-lock"></i> 密码</label>
+                    <input type="password" id="login-password" placeholder="请输入密码" required minlength="6">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <span>登 录</span> <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                </button>
+                <div class="auth-footer" style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; padding: 0 4px; margin-top: 16px;">
+                    <a href="#" id="go-to-forgot" style="color: var(--text-secondary); text-decoration: none; transition: var(--transition-fast);">忘记密码？</a>
+                    <span>还没有账号？<a href="#" id="go-to-register">立即注册</a></span>
+                </div>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" class="auth-form">
+                <div class="form-row" style="margin-bottom: 12px;">
+                    <div class="form-group flex-1" style="margin-bottom: 0;">
+                        <label for="register-username"><i class="fa-solid fa-user-plus"></i> 用户名</label>
+                        <input type="text" id="register-username" placeholder="登录用户名" required minlength="3">
+                    </div>
+                    <div class="form-group flex-1" style="margin-bottom: 0;">
+                        <label for="register-realname"><i class="fa-solid fa-signature"></i> 真实姓名</label>
+                        <input type="text" id="register-realname" placeholder="与证件姓名一致" required>
+                    </div>
+                </div>
+
+                <div class="form-row" style="margin-bottom: 12px;">
+                    <div class="form-group flex-1" style="margin-bottom: 0;">
+                        <label for="register-phone"><i class="fa-solid fa-phone"></i> 手机号</label>
+                        <input type="text" id="register-phone" placeholder="11位手机号码" required pattern="^1[3-9]\d{9}$">
+                    </div>
+                    <div class="form-group flex-1" style="margin-bottom: 0;">
+                        <label for="register-dept"><i class="fa-solid fa-building"></i> 所属部门</label>
+                        <select id="register-dept" required>
+                            <option value="" disabled selected>请选择所属部门...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label for="register-idcard"><i class="fa-solid fa-id-card"></i> 身份证号</label>
+                    <input type="text" id="register-idcard" placeholder="18位身份证号码" required pattern="^\d{17}[\dXx]$">
+                </div>
+
+                <div class="form-row" style="margin-bottom: 8px;">
+                    <div class="form-group flex-1" style="margin-bottom: 0;">
+                        <label for="register-password"><i class="fa-solid fa-lock"></i> 密码</label>
+                        <input type="password" id="register-password" placeholder="强密码" required>
+                    </div>
+                    <div class="form-group flex-1" style="margin-bottom: 0;">
+                        <label for="register-confirm-password"><i class="fa-solid fa-circle-check"></i> 确认密码</label>
+                        <input type="password" id="register-confirm-password" placeholder="再次输入" required>
+                    </div>
+                </div>
+
+                <!-- Password Strength Checklist & Bar -->
+                <div class="password-strength-container" style="margin-top: 10px; margin-bottom: 18px;">
+                    <div class="strength-label" style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px;">
+                        <span style="color: var(--text-secondary);">密码安全强度:</span>
+                        <span id="strength-text" style="font-weight: 700; color: var(--danger);">极弱</span>
+                    </div>
+                    <div class="strength-bar-wrapper" style="height: 6px; background: rgba(15, 23, 42, 0.06); border-radius: 3px; overflow: hidden; margin-bottom: 8px; border: 1px solid rgba(15, 23, 42, 0.04);">
+                        <div id="password-strength-bar" style="width: 0%; height: 100%; transition: width 0.3s ease, background-color: 0.3s ease; background-color: var(--danger);"></div>
+                    </div>
+                    <ul class="strength-requirements" style="list-style: none; padding-left: 0; font-size: 0.8rem; color: var(--text-muted); display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px;">
+                        <li id="req-length"><i class="fa-regular fa-circle" id="ico-length" style="margin-right: 4px;"></i>长度至少 8 位</li>
+                        <li id="req-upper"><i class="fa-regular fa-circle" id="ico-upper" style="margin-right: 4px;"></i>包含大写字母</li>
+                        <li id="req-lower"><i class="fa-regular fa-circle" id="ico-lower" style="margin-right: 4px;"></i>包含小写字母</li>
+                        <li id="req-number"><i class="fa-regular fa-circle" id="ico-number" style="margin-right: 4px;"></i>包含数字</li>
+                        <li id="req-special" style="grid-column: span 2;"><i class="fa-regular fa-circle" id="ico-special" style="margin-right: 4px;"></i>包含特殊字符 (@, #, $, %, !, *, ? 等)</li>
+                        <li id="req-match" style="grid-column: span 2;"><i class="fa-regular fa-circle" id="ico-match" style="margin-right: 4px;"></i>两次密码输入一致</li>
+                    </ul>
+                </div>
+
+                <button type="submit" id="btn-submit-register" class="btn btn-accent btn-block" disabled>
+                    <span>提交注册申请</span> <i class="fa-solid fa-paper-plane"></i>
+                </button>
+                <div class="auth-footer" style="margin-top: 12px;">
+                    已有账号？<a href="#" id="go-to-login">返回登录</a>
+                </div>
+            </form>
+
+            <!-- Forgot Password Form [NEW] -->
+            <form id="forgot-form" class="auth-form">
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label for="forgot-username"><i class="fa-solid fa-user"></i> 用户名</label>
+                    <input type="text" id="forgot-username" placeholder="请输入您的登录用户名" required minlength="3">
+                </div>
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label for="forgot-realname"><i class="fa-solid fa-signature"></i> 真实姓名</label>
+                    <input type="text" id="forgot-realname" placeholder="请输入您注册的真实姓名" required>
+                </div>
+                <div class="form-row" style="margin-bottom: 12px;">
+                    <div class="form-group flex-1" style="margin-bottom: 0;">
+                        <label for="forgot-phone"><i class="fa-solid fa-phone"></i> 手机号</label>
+                        <input type="text" id="forgot-phone" placeholder="绑定的11位手机号" required pattern="^1[3-9]\d{9}$">
+                    </div>
+                    <div class="form-group flex-1" style="margin-bottom: 0;">
+                        <label for="forgot-idcard"><i class="fa-solid fa-id-card"></i> 身份证号</label>
+                        <input type="text" id="forgot-idcard" placeholder="绑定的18位身份证号" required pattern="^\d{17}[\dXx]$">
+                    </div>
+                </div>
+                <div class="form-row" style="margin-bottom: 16px;">
+                    <div class="form-group flex-1" style="margin-bottom: 0;">
+                        <label for="forgot-password"><i class="fa-solid fa-lock"></i> 新密码</label>
+                        <input type="password" id="forgot-password" placeholder="输入新密码" required minlength="6">
+                    </div>
+                    <div class="form-group flex-1" style="margin-bottom: 0;">
+                        <label for="forgot-confirm-password"><i class="fa-solid fa-circle-check"></i> 确认新密码</label>
+                        <input type="password" id="forgot-confirm-password" placeholder="再次输入密码" required minlength="6">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-accent btn-block">
+                    <span>重 置 密 码</span> <i class="fa-solid fa-key"></i>
+                </button>
+                <div class="auth-footer" style="margin-top: 16px;">
+                    想起来密码了？<a href="#" id="go-to-login-from-forgot">返回登录</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. MAIN APPLICATION CONTAINER -->
+    <div id="app-container" class="app-container hidden">
+        <!-- SIDEBAR -->
+        <aside class="sidebar glassmorphism">
+            <div class="sidebar-brand">
+                <i class="fa-solid fa-boxes-stacked logo-icon"></i>
+                <span>汉中电信固资管理</span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="nav-item active" data-target="panel-dashboard">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <span>控制台总览</span>
+                    </li>
+                    <li class="nav-item" data-target="panel-assets">
+                        <i class="fa-solid fa-list-check"></i>
+                        <span>资产台账</span>
+                    </li>
+                    <li class="nav-item" data-target="panel-approvals" id="nav-approvals">
+                        <i class="fa-solid fa-stamp"></i>
+                        <span>审批中心</span>
+                        <span class="badge badge-danger hidden" id="approval-badge-count" style="margin-left: auto; padding: 2px 6px; font-size: 0.75rem; border-radius: 10px;">0</span>
+                    </li>
+                    <li class="nav-item hidden" data-target="panel-users" id="nav-users">
+                        <i class="fa-solid fa-users-gear"></i>
+                        <span>账号管理</span>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-user">
+                <div class="user-avatar">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+                <div class="user-info">
+                    <span id="user-display-name">管理员</span>
+                    <span id="user-display-role" class="badge badge-admin">Admin</span>
+                </div>
+                <button id="btn-logout" title="安全退出">
+                    <i class="fa-solid fa-power-off"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content">
+            <!-- Header bar -->
+            <header class="content-header">
+                <div>
+                    <h1 id="page-title">资产监控中心</h1>
+                    <p id="page-subtitle" class="text-muted">实时反馈企业资产健康状况与分配统计</p>
+                </div>
+                <div class="header-actions">
+                    <span class="live-indicator"><span class="pulse-dot"></span> 系统在线</span>
+                    <span class="system-time" id="system-time">2026-05-26 14:20:00</span>
+                </div>
+            </header>
+
+            <!-- PANEL 1: DASHBOARD -->
+            <section id="panel-dashboard" class="content-panel active">
+                <!-- Summary Metrics Cards Grid -->
+                <div class="metrics-grid">
+                    <!-- Total Assets -->
+                    <div class="metric-card glassmorphism hover-lift glow-purple">
+                        <div class="card-icon"><i class="fa-solid fa-cubes"></i></div>
+                        <div class="card-info">
+                            <h3>资产总数量</h3>
+                            <span class="metric-value counter" id="stat-total-count">0</span>
+                            <p class="metric-desc">当前登记的所有实物及虚拟资产</p>
+                        </div>
+                    </div>
+                    <!-- Total Valuation -->
+                    <div class="metric-card glassmorphism hover-lift glow-cyan">
+                        <div class="card-icon"><i class="fa-solid fa-coins"></i></div>
+                        <div class="card-info">
+                            <h3>资产总估值</h3>
+                            <span class="metric-value font-outfit" id="stat-total-value">¥0.00</span>
+                            <p class="metric-desc">在库及折旧前资产采购成本总计</p>
+                        </div>
+                    </div>
+                    <!-- Active/In Use -->
+                    <div class="metric-card glassmorphism hover-lift glow-green">
+                        <div class="card-icon"><i class="fa-solid fa-person-circle-check"></i></div>
+                        <div class="card-info">
+                            <h3>分配在用数</h3>
+                            <span class="metric-value counter" id="stat-in-use">0</span>
+                            <p class="metric-desc">正在由各部门与保管人使用的资产</p>
+                        </div>
+                    </div>
+                    <!-- Under Maintenance -->
+                    <div class="metric-card glassmorphism hover-lift glow-orange">
+                        <div class="card-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                        <div class="card-info">
+                            <h3>异常维保数</h3>
+                            <span class="metric-value counter" id="stat-maintenance">0</span>
+                            <p class="metric-desc">处于故障、保修或送修状态的资产</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Charts Row -->
+                <div class="charts-row">
+                    <!-- Status Distribution (Circular progress diagram using SVG) -->
+                    <div class="chart-card glassmorphism">
+                        <div class="card-title-bar">
+                            <h3><i class="fa-solid fa-circle-nodes"></i> 资产状态占比</h3>
+                        </div>
+                        <div class="chart-container flex-center">
+                            <div class="donut-chart-wrapper">
+                                <svg width="220" height="220" viewBox="0 0 220 220" class="donut-svg">
+                                    <circle cx="110" cy="110" r="80" class="donut-track"></circle>
+                                    <!-- Dynamic segment circles will be injected here via javascript -->
+                                    <circle cx="110" cy="110" r="80" class="donut-segment ds-available"></circle>
+                                    <circle cx="110" cy="110" r="80" class="donut-segment ds-in-use"></circle>
+                                    <circle cx="110" cy="110" r="80" class="donut-segment ds-maintenance"></circle>
+                                    <circle cx="110" cy="110" r="80" class="donut-segment ds-scrapped"></circle>
+                                </svg>
+                                <div class="donut-center-text">
+                                    <span id="donut-center-percentage">100%</span>
+                                    <small id="donut-center-label">正常运转</small>
+                                </div>
+                            </div>
+                            <div class="chart-legends" id="status-legends">
+                                <div class="legend-item"><span class="legend-color val-available"></span>闲置在库 (<span id="count-avail">0</span>)</div>
+                                <div class="legend-item"><span class="legend-color val-in-use"></span>分配在用 (<span id="count-use">0</span>)</div>
+                                <div class="legend-item"><span class="legend-color val-maintenance"></span>维保检测 (<span id="count-maint">0</span>)</div>
+                                <div class="legend-item"><span class="legend-color val-scrapped"></span>报废处置 (<span id="count-scrap">0</span>)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category Valuation Bar chart (Pure HTML/CSS horizontal bars) -->
+                    <div class="chart-card glassmorphism">
+                        <div class="card-title-bar">
+                            <h3><i class="fa-solid fa-chart-simple"></i> 各类别资产估值与占比</h3>
+                        </div>
+                        <div class="category-bars-container" id="category-bars">
+                            <!-- Injected dynamically: category cards with progress bars -->
+                            <div class="empty-state-small text-muted flex-center">
+                                <i class="fa-regular fa-folder-open"></i> 暂无分类数据，录入资产后将自动统计
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PANEL 2: ASSETS LEDGER -->
+            <section id="panel-assets" class="content-panel">
+                <!-- Filters & Controls Bar -->
+                <div class="filters-bar glassmorphism">
+                    <div class="filters-left">
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" id="search-input" placeholder="搜索资产名称 / 保管人 / 部门...">
+                        </div>
+                        
+                        <div class="select-wrapper">
+                            <select id="filter-category">
+                                <option value="">所有类别</option>
+                                <option value="Electronics">🔌 电子设备</option>
+                                <option value="Furniture">🛋️ 办公家具</option>
+                                <option value="Software">💿 软件资产</option>
+                                <option value="Office">📎 行政耗材</option>
+                            </select>
+                        </div>
+
+                        <div class="select-wrapper">
+                            <select id="filter-status">
+                                <option value="">所有状态</option>
+                                <option value="Available">🟢 闲置在库</option>
+                                <option value="In_Use">🔵 分配在用</option>
+                                <option value="Maintenance">🟡 维保检测</option>
+                                <option value="Scrapped">🔴 报废处置</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="filters-right">
+                        <div class="sorting-controls">
+                            <span class="text-muted"><i class="fa-solid fa-arrow-down-up-wide"></i> 排序:</span>
+                            <select id="sort-by">
+                                <option value="id">创建时间</option>
+                                <option value="price">资产价格</option>
+                                <option value="purchase_date">购买日期</option>
+                                <option value="name">资产名称</option>
+                            </select>
+                            <button id="btn-sort-order" class="btn-icon" title="切换升降序">
+                                <i class="fa-solid fa-sort-amount-down"></i>
+                            </button>
+                        </div>
+                        <button id="btn-export-assets" class="btn btn-secondary" style="margin-right: 12px; display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-file-excel"></i> <span>导出 Excel</span>
+                        </button>
+                        <button id="btn-add-asset" class="btn btn-primary">
+                            <i class="fa-solid fa-circle-plus"></i> <span>新增资产</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Assets Inventory Table Container -->
+                <div class="table-container glassmorphism">
+                    <table class="assets-table">
+                        <thead>
+                            <tr>
+                                <th width="150">资产编码</th>
+                                <th width="80">实物图</th>
+                                <th>资产名称</th>
+                                <th width="120">类别</th>
+                                <th width="120">采购价格</th>
+                                <th width="120">采购日期</th>
+                                <th width="110">使用状态</th>
+                                <th width="110">使用部门</th>
+                                <th width="100">保管人</th>
+                                <th width="120" class="text-center">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="assets-table-body">
+                            <!-- Injected by app.js -->
+                        </tbody>
+                    </table>
+                    <div id="table-empty-state" class="empty-state hidden">
+                        <i class="fa-regular fa-hourglass-half empty-icon"></i>
+                        <h3>未找到符合条件的资产</h3>
+                        <p class="text-muted">请尝试调整搜索关键字或筛选条件，或者直接录入一台新资产。</p>
+                        <button id="btn-empty-add-asset" class="btn btn-accent">
+                            <i class="fa-solid fa-circle-plus"></i> 录入首台资产
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PANEL 3: APPROVAL CENTER -->
+            <section id="panel-approvals" class="content-panel">
+                <!-- Filters/Control Bar for Approvals -->
+                <div class="filters-bar glassmorphism" style="margin-bottom: 24px; padding: 16px 24px;">
+                    <div class="filters-left">
+                        <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px; margin: 0;">
+                            <i class="fa-solid fa-stamp" style="color: var(--purple);"></i>
+                            <span>固资与账号审批事务中心</span>
+                        </h2>
+                    </div>
+                    <div class="filters-right" id="approval-filters-right">
+                        <button id="btn-export-approvals" class="btn btn-secondary" style="margin-right: 16px; display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-file-excel"></i> <span>导出记录</span>
+                        </button>
+                        <span class="live-indicator"><span class="pulse-dot"></span> 审批流即时同步</span>
+                    </div>
+                </div>
+
+                <!-- Admin Triple-Tabs Page Navigation -->
+                <div id="approvals-tabs-bar" class="approval-tabs glassmorphism hidden" style="margin-bottom: 24px; display: flex; gap: 12px; padding: 6px 12px; border-radius: 12px;">
+                    <button type="button" id="btn-tab-assets" class="tab-btn active" style="flex: 1; border: none; background: transparent; padding: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 8px; font-size: 0.9rem; color: var(--text-main);">
+                        <i class="fa-solid fa-boxes-stacked"></i> 资产变动审批
+                        <span class="badge badge-tab" id="badge-asset-approvals" style="background-color: var(--purple); color: white; border-radius: 10px; padding: 2px 8px; font-size: 0.75rem; font-weight: 700; margin-left: 4px; display: none;">0</span>
+                    </button>
+                    <button type="button" id="btn-tab-users" class="tab-btn" style="flex: 1; border: none; background: transparent; padding: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 8px; font-size: 0.9rem; color: var(--text-muted);">
+                        <i class="fa-solid fa-user-plus"></i> 账号注册审批
+                        <span class="badge badge-tab" id="badge-user-approvals" style="background-color: var(--purple); color: white; border-radius: 10px; padding: 2px 8px; font-size: 0.75rem; font-weight: 700; margin-left: 4px; display: none;">0</span>
+                    </button>
+                    <button type="button" id="btn-tab-history" class="tab-btn" style="flex: 1; border: none; background: transparent; padding: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 8px; font-size: 0.9rem; color: var(--text-muted);">
+                        <i class="fa-solid fa-clock-rotate-left"></i> 已审批历史记录
+                    </button>
+                </div>
+
+                <!-- Admin approvals layout -->
+                <div id="approvals-admin-section" class="hidden">
+                    <div id="approvals-admin-list" class="approvals-card-grid">
+                        <!-- Admin approval pending cards will be injected here -->
+                    </div>
+                    <div id="approvals-admin-empty" class="empty-state hidden">
+                        <i class="fa-solid fa-square-check empty-icon" style="color: var(--green);"></i>
+                        <h3>所有审批均已处理完毕</h3>
+                        <p class="text-muted">当前没有任何待办审批申请，您可以通过台账系统审核资产变动。</p>
+                    </div>
+                </div>
+
+                <!-- Admin User Registration Approvals Layout -->
+                <div id="approvals-user-reg-section" class="hidden" style="margin-top: 10px;">
+                    <div id="approvals-user-reg-list" class="approvals-card-grid">
+                        <!-- Pending user cards injected here -->
+                    </div>
+                    <div id="approvals-user-reg-empty" class="empty-state hidden">
+                        <i class="fa-solid fa-user-check empty-icon" style="color: var(--green);"></i>
+                        <h3>所有账号注册申请均已处理完毕</h3>
+                        <p class="text-muted">当前没有待审批的员工注册请求。</p>
+                    </div>
+                </div>
+
+                <!-- Admin Completed History Layout [NEW] -->
+                <div id="approvals-history-section" class="table-container glassmorphism hidden" style="margin-top: 10px;">
+                    <table class="assets-table">
+                        <thead>
+                            <tr>
+                                <th width="100">审批类型</th>
+                                <th width="120">申请账号</th>
+                                <th width="280">资产编号 / 用户资料</th>
+                                <th width="110">审批决议</th>
+                                <th width="100">审核人</th>
+                                <th>审核意见批注</th>
+                                <th width="150">处理时间</th>
+                            </tr>
+                        </thead>
+                        <tbody id="approvals-history-table-body">
+                            <!-- Injected by app.js -->
+                        </tbody>
+                    </table>
+                    <div id="approvals-history-empty" class="empty-state hidden">
+                        <i class="fa-solid fa-clock-rotate-left empty-icon" style="font-size: 3rem; color: var(--text-muted); opacity: 0.5; margin-bottom: 12px; display: block;"></i>
+                        <h3>暂无审批决议历史</h3>
+                        <p class="text-muted">此处将记录您处理过的所有固资变动与账号注册申请。</p>
+                    </div>
+                </div>
+
+                <!-- Regular User approvals layout -->
+                <div id="approvals-user-section" class="table-container glassmorphism hidden">
+                    <table class="assets-table">
+                        <thead>
+                            <tr>
+                                <th width="100">申请类型</th>
+                                <th width="160">资产编码</th>
+                                <th>资产名称</th>
+                                <th width="120">采购价格</th>
+                                <th width="150">申请时间</th>
+                                <th width="110">审批状态</th>
+                                <th width="100">审批人</th>
+                                <th>审核批注</th>
+                            </tr>
+                        </thead>
+                        <tbody id="approvals-user-table-body">
+                            <!-- Injected by app.js -->
+                        </tbody>
+                    </table>
+                    <div id="approvals-user-empty" class="empty-state hidden">
+                        <i class="fa-regular fa-folder-open empty-icon"></i>
+                        <h3>暂无审批申请记录</h3>
+                        <p class="text-muted">您提交的所有资产登记、变更或报废申请将在此处显示流转进度。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Account Management Dashboard Panel [NEW] -->
+            <section id="panel-users" class="content-panel">
+                <!-- Filters/Control Bar -->
+                <div class="filters-bar glassmorphism" style="margin-bottom: 24px; padding: 16px 24px;">
+                    <div class="filters-left">
+                        <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px; margin: 0;">
+                            <i class="fa-solid fa-users-gear" style="color: var(--purple);"></i>
+                            <span>员工账号准入与管理中心</span>
+                        </h2>
+                    </div>
+                    <div class="filters-right">
+                        <span class="live-indicator"><span class="pulse-dot"></span> 安全审计保护中</span>
+                    </div>
+                </div>
+
+                <!-- Account Management Table -->
+                <div class="table-container glassmorphism">
+                    <table class="assets-table">
+                        <thead>
+                            <tr>
+                                <th width="100">用户名</th>
+                                <th width="120">真实姓名</th>
+                                <th width="140">联系电话</th>
+                                <th width="190">身份证号</th>
+                                <th width="130">所属部门</th>
+                                <th width="100">系统角色</th>
+                                <th width="100">账号状态</th>
+                                <th width="150">注册时间</th>
+                                <th width="120">管理操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- Dynamically injected by app.js -->
+                        </tbody>
+                    </table>
+                    <div id="users-empty" class="empty-state hidden">
+                        <i class="fa-solid fa-user-slash empty-icon" style="font-size: 3rem; color: var(--text-muted); opacity: 0.5;"></i>
+                        <h3>暂无系统账号记录</h3>
+                        <p class="text-muted">当前系统无普通用户账号，可等待员工注册或通过后台配置。</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 3. MODAL DIALOGS -->
+    
+    <!-- Asset Form Modal (Used for both Create and Update) -->
+    <div id="asset-modal" class="modal-overlay">
+        <div class="modal-card glassmorphism animate-pop">
+            <div class="modal-header">
+                <h3 id="modal-title"><i class="fa-solid fa-circle-plus"></i> 新增固定资产</h3>
+                <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="asset-form">
+                <input type="hidden" id="asset-id">
+                
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label for="asset-code">资产编码 <span class="text-xs text-muted">(留空由系统自动生成)</span></label>
+                        <input type="text" id="asset-code" placeholder="如: IT-EQ-001">
+                    </div>
+                    <div class="form-group flex-2">
+                        <label for="asset-name" class="required">资产名称</label>
+                        <input type="text" id="asset-name" placeholder="请输入资产名称或型号 (例如: MacBook Pro 16)" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="asset-category" class="required">资产分类</label>
+                        <select id="asset-category" required>
+                            <option value="" disabled selected>选择类别...</option>
+                            <option value="Electronics">🔌 电子设备</option>
+                            <option value="Furniture">🛋️ 办公家具</option>
+                            <option value="Software">💿 软件资产</option>
+                            <option value="Office">📎 行政耗材</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="asset-price" class="required">采购单价 (元)</label>
+                        <input type="number" id="asset-price" step="0.01" min="0" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="asset-date" class="required">购买日期</label>
+                        <input type="date" id="asset-date" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="asset-status" class="required">资产状态</label>
+                        <select id="asset-status" required>
+                            <option value="Available">🟢 闲置在库</option>
+                            <option value="In_Use">🔵 分配在用</option>
+                            <option value="Maintenance">🟡 维保检测</option>
+                            <option value="Scrapped">🔴 报废处置</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="asset-dept">使用部门</label>
+                        <select id="asset-dept">
+                            <option value="">请选择使用部门...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="asset-username">保管人 / 领用人</label>
+                        <input type="text" id="asset-username" placeholder="领用人姓名">
+                    </div>
+                </div>
+
+                <!-- Physical image upload zone -->
+                <div class="form-group">
+                    <label>资产实物图片 <span class="text-xs text-muted">(支持拖拽或点击选择多张图片上传，限制单张 5MB)</span></label>
+                    <div id="image-upload-wrapper" class="image-upload-zone" style="min-height: 120px; padding: 20px;">
+                        <input type="file" id="asset-image-file" accept="image/*" style="display: none;" multiple>
+                        <input type="hidden" id="asset-image-url">
+                        
+                        <!-- Dropzone default state -->
+                        <div id="upload-default-state" class="upload-state-content" style="gap: 6px;">
+                            <i class="fa-solid fa-cloud-arrow-up upload-icon" style="font-size: 1.8rem; color: var(--purple);"></i>
+                            <span class="upload-text" style="font-size: 0.8rem;">拖拽图片到此处，或 <span class="upload-link">点击上传</span></span>
+                            <span class="upload-tip text-muted" style="font-size: 0.7rem;">支持 PNG, JPG, JPEG, WEBP 格式 (可按 Ctrl/Shift 多选)</span>
+                        </div>
+                        
+                        <!-- Uploading/Loading state -->
+                        <div id="upload-loading-state" class="upload-state-content hidden">
+                            <i class="fa-solid fa-circle-notch fa-spin upload-loading-spinner" style="font-size: 1.5rem;"></i>
+                            <span class="upload-text" style="font-size: 0.8rem;">正在上传图片中，请稍候...</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Uploaded images thumbnail preview row -->
+                    <div id="uploaded-images-container" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+                        <!-- Micro thumb cards will be generated here -->
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="asset-desc">备注说明</label>
+                    <textarea id="asset-desc" rows="3" placeholder="填写资产额外配置、保修期、当前成色等详细备注说明信息..."></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-close-modal">取 消</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> 保 存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirm Delete Modal -->
+    <div id="delete-modal" class="modal-overlay">
+        <div class="modal-card modal-confirm glassmorphism animate-pop">
+            <div class="modal-header header-danger">
+                <h3><i class="fa-solid fa-triangle-exclamation"></i> 安全删除警告</h3>
+                <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="danger-warning-icon">
+                    <i class="fa-regular fa-trash-can animate-bounce"></i>
+                </div>
+                <p>您确定要永久删除资产 <strong id="delete-asset-name" class="text-danger">"MacBook Pro"</strong> 吗？</p>
+                <p class="text-muted text-sm">此操作不可逆，删除后该资产的所有采购记录及流转状态将被彻底抹去！</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-close-modal">取 消</button>
+                <button type="button" id="btn-confirm-delete" class="btn btn-danger"><i class="fa-solid fa-trash-can"></i> 确认删除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Asset Lifecycle Timeline Modal [NEW] -->
+    <div id="lifecycle-modal" class="modal-overlay">
+        <div class="modal-card glassmorphism animate-pop" style="max-width: 600px; background: #ffffff !important; border: 1px solid #cbd5e1 !important; box-shadow: var(--shadow-soft);">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-timeline" style="color: var(--purple);"></i> 固资生命周期流转历史</h3>
+                <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" style="max-height: 480px; overflow-y: auto; padding: 12px 24px; text-align: left;">
+                <div style="margin-bottom: 20px; border-left: 2px dashed #cbd5e1; padding-left: 12px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px;">
+                    <div>
+                        <span class="text-muted text-sm">资产唯一编码: </span>
+                        <span id="lifecycle-asset-code" class="asset-id-tag font-outfit" style="font-size: 0.95rem; font-weight: 700;">AST-2026-9812</span>
+                    </div>
+                    <div>
+                        <span class="text-muted text-sm">资产名称: </span>
+                        <strong id="lifecycle-asset-name" style="color: var(--text-main);">MacBook Pro</strong>
+                    </div>
+                </div>
+                
+                <!-- Vertical Timeline Tree -->
+                <div id="lifecycle-timeline" class="lifecycle-timeline-tree">
+                    <!-- Dynamic timeline elements will be injected here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-close-modal" style="width: 100%;">关 闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal [NEW] -->
+    <div id="user-edit-modal" class="modal-overlay">
+        <div class="modal-card glassmorphism animate-pop" style="max-width: 500px; background: #ffffff !important; border: 1px solid #cbd5e1 !important; box-shadow: var(--shadow-soft);">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-user-pen" style="color: var(--purple);"></i> 编辑员工账号档案</h3>
+                <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="user-edit-form" class="modal-body" style="padding: 24px; text-align: left; margin: 0;">
+                <input type="hidden" id="edit-usr-username">
+                
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                    <span class="text-muted text-sm">账户登录名:</span>
+                    <strong id="edit-usr-display-username" class="font-outfit" style="color: var(--purple); font-size: 1.1rem;">username</strong>
+                </div>
+
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                        <label for="edit-usr-realname" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">真实姓名</label>
+                        <input type="text" id="edit-usr-realname" required placeholder="输入真实姓名" style="background: #f8fafc !important; border: 1px solid #cbd5e1 !important; border-radius: 8px !important; padding: 8px 12px !important; font-size: 0.85rem; color: #0f172a; width: 100%;">
+                    </div>
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                        <label for="edit-usr-phone" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">联系电话</label>
+                        <input type="text" id="edit-usr-phone" required placeholder="11位手机号" style="background: #f8fafc !important; border: 1px solid #cbd5e1 !important; border-radius: 8px !important; padding: 8px 12px !important; font-size: 0.85rem; color: #0f172a; width: 100%;">
+                    </div>
+                </div>
+
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                        <label for="edit-usr-idcard" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">身份证号</label>
+                        <input type="text" id="edit-usr-idcard" required placeholder="18位身份证号" style="background: #f8fafc !important; border: 1px solid #cbd5e1 !important; border-radius: 8px !important; padding: 8px 12px !important; font-size: 0.85rem; color: #0f172a; width: 100%;">
+                    </div>
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                        <label for="edit-usr-dept" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">所属部门</label>
+                        <select id="edit-usr-dept" required style="background: #f8fafc !important; border: 1px solid #cbd5e1 !important; border-radius: 8px !important; padding: 8px 12px !important; font-size: 0.85rem; color: #0f172a; width: 100%;">
+                            <option value="" disabled selected>请选择所属部门...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;">
+                    <label for="edit-usr-password" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">重置密码 <span class="text-xs text-muted">(留空则不重置)</span></label>
+                    <input type="password" id="edit-usr-password" placeholder="请输入新密码，留空不修改" style="background: #f8fafc !important; border: 1px solid #cbd5e1 !important; border-radius: 8px !important; padding: 8px 12px !important; font-size: 0.85rem; color: #0f172a; width: 100%;">
+                </div>
+
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                        <label for="edit-usr-role" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">系统角色</label>
+                        <select id="edit-usr-role" style="background: #f8fafc !important; border: 1px solid #cbd5e1 !important; border-radius: 8px !important; padding: 8px 12px !important; font-size: 0.85rem; color: #0f172a; width: 100%;">
+                            <option value="user">普通员工 (User)</option>
+                            <option value="admin">系统管理员 (Admin)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+                        <label for="edit-usr-status" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">账户状态</label>
+                        <select id="edit-usr-status" style="background: #f8fafc !important; border: 1px solid #cbd5e1 !important; border-radius: 8px !important; padding: 8px 12px !important; font-size: 0.85rem; color: #0f172a; width: 100%;">
+                            <option value="approved">🟢 已启用通过 (Approved)</option>
+                            <option value="pending">⏳ 挂起待审批 (Pending)</option>
+                            <option value="suspended">🟠 禁用停用 (Suspended)</option>
+                            <option value="rejected">🔴 拒绝驳回 (Rejected)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="padding: 16px 0 0 0; border-top: 1px solid #e2e8f0; display: flex; gap: 12px; width: 100%;">
+                    <button type="button" class="btn btn-secondary btn-close-modal" style="flex: 1; margin: 0;">取 消</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1; margin: 0;"><i class="fa-solid fa-floppy-disk"></i> 保存更改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Asset Details Modal (For viewing all details of an asset beautifully, including its image) -->
+    <div id="asset-details-modal" class="modal-overlay">
+        <div class="modal-card glassmorphism animate-pop" style="max-width: 800px; background: #ffffff !important; border: 1px solid #cbd5e1 !important; box-shadow: var(--shadow-soft);">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-box-open" style="color: var(--purple);"></i> 固定资产详细档案</h3>
+                <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" style="padding: 24px; text-align: left; margin: 0; max-height: 520px; overflow-y: auto;">
+                <div class="details-layout" style="display: flex; gap: 24px; flex-wrap: wrap;">
+                    <!-- Left column: image & multiple gallery thumbnails -->
+                    <div class="details-image-container" style="flex: 1; min-width: 250px; display: flex; flex-direction: column; align-items: center; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; background: #f8fafc; min-height: 280px; gap: 12px;">
+                        <div style="flex: 1; display: flex; align-items: center; justify-content: center; width: 100%;">
+                            <img id="detail-asset-img" src="" alt="资产实物图" style="max-width: 100%; max-height: 200px; border-radius: 8px; object-fit: contain; display: none; box-shadow: var(--shadow-sm); transition: transform 0.2s ease;">
+                            <div id="detail-asset-img-placeholder" style="display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--text-muted);">
+                                <i class="fa-solid fa-image-portrait" style="font-size: 3rem;"></i>
+                                <span style="font-size: 0.8rem;">暂无实物图片上传</span>
+                            </div>
+                        </div>
+                        <!-- Thumbnail Row for multiple images -->
+                        <div id="detail-asset-img-gallery" style="display: flex; gap: 6px; overflow-x: auto; width: 100%; justify-content: center; padding-top: 4px; border-top: 1px solid #e2e8f0; display: none;">
+                            <!-- Tiny thumbnail previews will be injected here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Right column: data -->
+                    <div class="details-data-container" style="flex: 1.5; min-width: 300px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px 12px;">
+                        <div style="grid-column: span 2; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 4px;">
+                            <span class="text-xs text-muted" style="display: block; margin-bottom: 2px;">资产名称</span>
+                            <strong id="detail-asset-name" style="font-size: 1.2rem; color: var(--text-main); display: block; word-break: break-all;">-</strong>
+                        </div>
+                        <div>
+                            <span class="text-xs text-muted" style="display: block; margin-bottom: 2px;">资产唯一编码</span>
+                            <span id="detail-asset-code" class="asset-id-tag font-outfit" style="font-size: 0.85rem; font-weight: 700;">-</span>
+                        </div>
+                        <div>
+                            <span class="text-xs text-muted" style="display: block; margin-bottom: 2px;">资产分类</span>
+                            <span id="detail-asset-category" class="badge badge-cat">-</span>
+                        </div>
+                        <div>
+                            <span class="text-xs text-muted" style="display: block; margin-bottom: 2px;">采购单价</span>
+                            <strong id="detail-asset-price" style="color: var(--purple); font-size: 1.05rem;">-</strong>
+                        </div>
+                        <div>
+                            <span class="text-xs text-muted" style="display: block; margin-bottom: 2px;">购买日期</span>
+                            <span id="detail-asset-date" class="font-outfit" style="font-size: 0.85rem;">-</span>
+                        </div>
+                        <div>
+                            <span class="text-xs text-muted" style="display: block; margin-bottom: 2px;">资产状态</span>
+                            <span id="detail-asset-status" class="badge badge-status">-</span>
+                        </div>
+                        <div>
+                            <span class="text-xs text-muted" style="display: block; margin-bottom: 2px;">使用部门</span>
+                            <span id="detail-asset-dept">-</span>
+                        </div>
+                        <div style="grid-column: span 2;">
+                            <span class="text-xs text-muted" style="display: block; margin-bottom: 2px;">保管人 / 领用人</span>
+                            <span id="detail-asset-username" class="custodian-tag" style="display: inline-flex;"><i class="fa-solid fa-user-tag text-xs" style="margin-right: 4px;"></i>-</span>
+                        </div>
+                        <div style="grid-column: span 2; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; min-height: 60px;">
+                            <span class="text-xs text-muted" style="display: block; margin-bottom: 4px; font-weight: 600;">备注说明</span>
+                            <p id="detail-asset-desc" style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; margin: 0; white-space: pre-wrap; word-break: break-all;">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mini Timeline at the bottom -->
+                <div style="margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                    <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-timeline" style="color: var(--purple);"></i> 资产生命周期演进历史
+                    </h4>
+                    <div id="detail-asset-timeline" class="lifecycle-timeline-tree" style="margin-top: 8px; max-height: 200px; overflow-y: auto; border-left: 2px dashed #cbd5e1; padding-left: 16px;">
+                        <!-- Dynamic timeline elements will be injected here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 16px 24px; border-top: 1px solid #e2e8f0; display: flex; gap: 12px;">
+                <button type="button" class="btn btn-secondary btn-close-modal" style="flex: 1; margin: 0;">关 闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SheetJS Library for Excel Export -->
+    <script src="xlsx.full.min.js"></script>
+    <!-- Core Logic Client -->
+    <script src="app.js"></script>
+</body>
+</html>

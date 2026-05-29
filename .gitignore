@@ -1,0 +1,13 @@
+.DS_Store
+__pycache__/
+*.pyc
+backend/venv/
+backend/.jwt_secret
+
+# SQLite Databases & logs
+*.db
+*.db-wal
+*.db-shm
+
+# User Uploaded Static Files (Asset images)
+frontend/uploads/
