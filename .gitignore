@@ -11,3 +11,6 @@ backend/.jwt_secret
 
 # User Uploaded Static Files (Asset images)
 frontend/uploads/
+
+# SSL certificates
+backend/*.pem

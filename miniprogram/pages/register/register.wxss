@@ -1,0 +1,124 @@
+/* pages/register/register.wxss */
+
+.register-card {
+  padding: 48rpx 36rpx;
+  z-index: 1;
+}
+
+.register-title {
+  font-size: 38rpx;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 12rpx;
+  letter-spacing: 1rpx;
+}
+
+.register-subtitle {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+  line-height: 36rpx;
+  margin-bottom: 44rpx;
+}
+
+.picker-placeholder {
+  color: var(--text-muted);
+}
+
+.picker-arrow {
+  font-size: 20rpx;
+  color: var(--text-muted);
+}
+
+/* Strength Meter card styling */
+.strength-card {
+  background-color: #F8FAFC;
+  border: 1rpx solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 28rpx;
+  margin-top: 32rpx;
+}
+
+.strength-header {
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.strength-label {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+}
+
+.strength-value {
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.strength-bar-wrapper {
+  height: 8rpx;
+  background-color: #E2E8F0;
+  border-radius: 4rpx;
+  overflow: hidden;
+  margin-bottom: 24rpx;
+}
+
+.strength-bar {
+  height: 100%;
+  transition: width 0.3s ease;
+  width: 0%;
+}
+
+.requirements-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16rpx 20rpx;
+}
+
+.req-item {
+  font-size: 22rpx;
+}
+
+.req-icon {
+  margin-right: 12rpx;
+  display: flex;
+  align-items: center;
+}
+
+.register-footer {
+  justify-content: center;
+  margin-top: 48rpx;
+}
+
+.footer-link {
+  font-size: 26rpx;
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+/* Text & background coloring helper classes */
+.text-danger {
+  color: var(--danger);
+}
+.bg-danger {
+  background-color: var(--danger);
+  box-shadow: 0 4rpx 10rpx rgba(220, 38, 38, 0.2);
+}
+
+.text-warning {
+  color: var(--warning);
+}
+.bg-warning {
+  background-color: var(--warning);
+  box-shadow: 0 4rpx 10rpx rgba(217, 119, 6, 0.2);
+}
+
+.text-success {
+  color: var(--success);
+}
+.bg-success {
+  background-color: var(--success);
+  box-shadow: 0 4rpx 10rpx rgba(5, 150, 105, 0.2);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}

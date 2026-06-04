@@ -1,0 +1,46 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/assets/assets",
+    "pages/approvals/approvals",
+    "pages/login/login",
+    "pages/register/register",
+    "pages/asset-detail/asset-detail",
+    "pages/asset-edit/asset-edit"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "navigationBarTitleText": "固资管家 (AssetWise)",
+    "navigationBarTextStyle": "black"
+  },
+  "tabBar": {
+    "color": "#64748B",
+    "selectedColor": "#7C3AED",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "工作台",
+        "iconPath": "images/home.png",
+        "selectedIconPath": "images/home_active.png"
+      },
+      {
+        "pagePath": "pages/assets/assets",
+        "text": "资产台账",
+        "iconPath": "images/list.png",
+        "selectedIconPath": "images/list_active.png"
+      },
+      {
+        "pagePath": "pages/approvals/approvals",
+        "text": "审批中心",
+        "iconPath": "images/check.png",
+        "selectedIconPath": "images/check_active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

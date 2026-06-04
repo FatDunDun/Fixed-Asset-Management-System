@@ -1,0 +1,137 @@
+<!-- pages/index/index.wxml -->
+<view class="container">
+  <!-- Glowing Background Backdrop -->
+  <view class="header-banner">
+    <view class="telecom-title-bar flex-row" style="margin-bottom: 44rpx; width: 100%; display: flex; align-items: center;">
+      <view style="width: 100rpx; height: 60rpx; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-right: 20rpx; flex-shrink: 0;">
+        <image class="title-logo" src="/images/telecom_5g.png" mode="aspectFit" style="height: 140rpx; width: 140rpx; mix-blend-mode: multiply; flex-shrink: 0;"></image>
+      </view>
+      <view class="flex-col">
+        <text class="title-text" style="font-size: 34rpx; font-weight: 800; color: var(--text-main); letter-spacing: 1rpx; white-space: nowrap;">汉中电信固定资产管理系统</text>
+      </view>
+    </view>
+    <view class="user-profile flex-row">
+      <view class="avatar flex-center">
+        <text class="avatar-letter">{{avatarLetter}}</text>
+      </view>
+      <view class="user-meta flex-col">
+        <text class="welcome-text" style="color: var(--text-main);">欢迎您，{{userInfo.realName || userInfo.username}}</text>
+        <view class="role-badge-row flex-row">
+          <text class="badge badge-primary" style="background-color: var(--primary-glow); color: var(--primary); border: 1rpx solid rgba(124, 58, 237, 0.15);">{{roleText}}</text>
+          <text class="live-indicator" style="color: var(--text-secondary);"><text class="dot-blink" style="background-color: var(--success); box-shadow: 0 0 12rpx var(--success);"></text>系统在线</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Metrics Grid -->
+  <view class="metrics-grid">
+    <view class="metric-card bg-purple" bindtap="onMetricClick" data-type="total">
+      <view class="metric-header flex-row">
+        <text class="metric-title">资产总数</text>
+        <text class="metric-icon">📦</text>
+      </view>
+      <text class="metric-value">{{stats.total_count || 0}}</text>
+      <text class="metric-desc">件 固资台账总量</text>
+    </view>
+    
+    <view class="metric-card bg-cyan" bindtap="onMetricClick" data-type="valuation">
+      <view class="metric-header flex-row">
+        <text class="metric-title">资产总估值</text>
+        <text class="metric-icon">🪙</text>
+      </view>
+      <text class="metric-value">¥{{formattedTotalValue}}</text>
+      <text class="metric-desc">元 折旧前采购额</text>
+    </view>
+
+    <view class="metric-card bg-green" bindtap="onMetricClick" data-type="In_Use">
+      <view class="metric-header flex-row">
+        <text class="metric-title">分配在用</text>
+        <text class="metric-icon">👤</text>
+      </view>
+      <text class="metric-value">{{stats.by_status['In_Use'] || 0}}</text>
+      <text class="metric-desc">件 部门保管使用中</text>
+    </view>
+
+    <view class="metric-card bg-orange" bindtap="onMetricClick" data-type="Maintenance">
+      <view class="metric-header flex-row">
+        <text class="metric-title">维保检测</text>
+        <text class="metric-icon">🔧</text>
+      </view>
+      <text class="metric-value">{{stats.by_status['Maintenance'] || 0}}</text>
+      <text class="metric-desc">件 异常保修维护中</text>
+    </view>
+  </view>
+
+  <!-- Quick Action Panel -->
+  <view class="card action-card">
+    <view class="card-title">快速通道</view>
+    <view class="action-grid">
+      <view class="action-item" bindtap="onScanQRCode">
+        <view class="action-icon bg-primary-light">🔍</view>
+        <text class="action-name">扫码查资产</text>
+      </view>
+      <view class="action-item" bindtap="onAddAsset">
+        <view class="action-icon bg-success-light">➕</view>
+        <text class="action-name">录入资产</text>
+      </view>
+      <view class="action-item" bindtap="onGoToApprovals">
+        <view class="action-icon bg-accent-light">📝</view>
+        <text class="action-name">审批事务</text>
+      </view>
+      <view class="action-item" bindtap="onLogout">
+        <view class="action-icon bg-danger-light">🚪</view>
+        <text class="action-name">安全退出</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Asset Status Distribution (Progress bar list) -->
+  <view class="card chart-card">
+    <view class="card-title">状态分布与运营健康度</view>
+    <view class="health-gauge flex-row">
+      <view class="gauge-center flex-col">
+        <text class="gauge-percent">{{healthScore}}%</text>
+        <text class="gauge-label">{{healthText}}</text>
+      </view>
+      <view class="gauge-legend flex-col">
+        <view class="legend-row flex-row">
+          <view class="legend-indicator bg-success"></view>
+          <text class="legend-text">在库闲置: {{stats.by_status['Available'] || 0}} 件</text>
+        </view>
+        <view class="legend-row flex-row">
+          <view class="legend-indicator bg-cyan"></view>
+          <text class="legend-text">分配在用: {{stats.by_status['In_Use'] || 0}} 件</text>
+        </view>
+        <view class="legend-row flex-row">
+          <view class="legend-indicator bg-orange"></view>
+          <text class="legend-text">维保检测: {{stats.by_status['Maintenance'] || 0}} 件</text>
+        </view>
+        <view class="legend-row flex-row">
+          <view class="legend-indicator bg-danger"></view>
+          <text class="legend-text">报废处置: {{stats.by_status['Scrapped'] || 0}} 件</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Category Valuations Horizontal Bar Chart -->
+  <view class="card chart-card">
+    <view class="card-title">品类估值排行</view>
+    <view class="category-bars">
+      <view wx:for="{{categoryList}}" wx:key="key" class="category-bar-row flex-col">
+        <view class="bar-info flex-row">
+          <text class="bar-name">{{item.icon}} {{item.name}} ({{item.count}}件)</text>
+          <text class="bar-val">¥{{item.formattedValue}}</text>
+        </view>
+        <view class="bar-track">
+          <view class="bar-fill bg-primary" style="width: {{item.percentage}}%;"></view>
+        </view>
+        <text class="bar-percentage">{{item.percentage}}%</text>
+      </view>
+      <view wx:if="{{categoryList.length === 0}}" class="empty-state-small flex-center">
+        <text class="text-muted">暂无分类统计数据</text>
+      </view>
+    </view>
+  </view>
+</view>

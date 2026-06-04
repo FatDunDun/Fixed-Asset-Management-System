@@ -1,0 +1,56 @@
+<!-- pages/login/login.wxml -->
+<view class="container">
+  <view class="login-bg-glow"></view>
+  
+  <view class="auth-header">
+    <view class="brand-logo flex-row" style="align-items: center; justify-content: center; display: flex;">
+      <view style="width: 110rpx; height: 70rpx; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-right: 16rpx; flex-shrink: 0;">
+        <image class="logo-img" src="/images/telecom_5g.png" mode="aspectFit" style="width: 180rpx; height: 180rpx; mix-blend-mode: multiply; flex-shrink: 0;"></image>
+      </view>
+      <text class="brand-name">汉中电信</text>
+    </view>
+    <view class="system-title">固定资产管理系统</view>
+    <view class="system-subtitle">轻松掌控您的企业固定资产</view>
+  </view>
+
+  <view class="card auth-card">
+    <!-- Quick Binding Notice -->
+    <view wx:if="{{openid && !bound}}" class="bind-alert">
+      <icon type="info" size="18" color="#0066FF"></icon>
+      <text class="bind-alert-text">已获取微信授权，请绑定已有系统账号，或进行员工注册</text>
+    </view>
+
+    <!-- Traditional Login / Bind Form -->
+    <form bindsubmit="onSubmitLogin">
+      <view class="form-group">
+        <text class="form-label required">员工账号 (用户名)</text>
+        <input class="form-input" name="username" placeholder="请输入用户名" value="{{username}}" minlength="3"/>
+      </view>
+
+      <view class="form-group">
+        <text class="form-label required">登录密码</text>
+        <input class="form-input" name="password" password placeholder="请输入密码" value="{{password}}"/>
+      </view>
+
+      <button class="btn btn-primary" form-type="submit" style="width: 100%;">
+        <text>{{ (openid && !bound) ? '绑定并登录' : '登 录' }}</text>
+      </button>
+    </form>
+
+    <!-- WeChat Quick Login (Only shown if we are in normal mode, or to trigger auth) -->
+    <view class="divider-row">
+      <view class="divider-line"></view>
+      <text class="divider-text">其他登录方式</text>
+      <view class="divider-line"></view>
+    </view>
+
+    <button class="btn btn-wechat flex-row" bindtap="onWeChatQuickLogin" style="width: 100%;">
+      <image class="wechat-icon" src="/images/home_active.png"></image>
+      <text>微信一键快捷登录</text>
+    </button>
+
+    <view class="auth-footer flex-row">
+      <text class="footer-link" bindtap="goToRegister">没有账号？申请注册</text>
+    </view>
+  </view>
+</view>

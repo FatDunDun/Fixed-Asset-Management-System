@@ -1,0 +1,112 @@
+<!-- pages/asset-edit/asset-edit.wxml -->
+<view class="container">
+  <view class="card form-card">
+    <view class="form-title">{{isEdit ? '编辑资产信息' : '新资产登记入库'}}</view>
+    <view class="form-subtitle" wx:if="{{!isAdmin}}">普通员工提交登记/修改信息后，需管理员在后台审批通过后方可正式生效入账。</view>
+
+    <form bindsubmit="onSubmitAsset">
+      <!-- Asset Code -->
+      <view class="form-group">
+        <text class="form-label">资产编码 <text class="label-hint">(留空则由系统自动生成)</text></text>
+        <input class="form-input" name="asset_code" placeholder="例如: IT-EQ-001" value="{{assetCode}}" disabled="{{isEdit}}"/>
+      </view>
+
+      <!-- Asset Name -->
+      <view class="form-group">
+        <text class="form-label required">资产名称</text>
+        <input class="form-input" name="name" placeholder="请输入资产名称或规格型号" value="{{name}}" />
+      </view>
+
+      <!-- Category -->
+      <view class="form-group">
+        <text class="form-label required">资产分类</text>
+        <picker mode="selector" range="{{categories}}" range-key="label" bindchange="onCategoryChange" value="{{categoryIndex}}">
+          <view class="form-picker">
+            <text class="{{categoryIndex === -1 ? 'picker-placeholder' : ''}}">
+              {{categoryIndex === -1 ? '点击选择分类...' : categories[categoryIndex].label}}
+            </text>
+            <text class="picker-arrow">▼</text>
+          </view>
+        </picker>
+      </view>
+
+      <!-- Price -->
+      <view class="form-group">
+        <text class="form-label required">采购价格 (元)</text>
+        <input class="form-input" name="price" type="digit" placeholder="0.00" value="{{price}}" />
+      </view>
+
+      <!-- Purchase Date -->
+      <view class="form-group">
+        <text class="form-label required">采购日期</text>
+        <picker mode="date" bindchange="onDateChange" value="{{purchaseDate}}">
+          <view class="form-picker">
+            <text>{{purchaseDate || '请选择采购日期'}}</text>
+            <text class="picker-arrow">📅</text>
+          </view>
+        </picker>
+      </view>
+
+      <!-- Status -->
+      <view class="form-group">
+        <text class="form-label required">使用状态</text>
+        <picker mode="selector" range="{{statuses}}" range-key="label" bindchange="onStatusChange" value="{{statusIndex}}">
+          <view class="form-picker">
+            <text>
+              {{statuses[statusIndex].label}}
+            </text>
+            <text class="picker-arrow">▼</text>
+          </view>
+        </picker>
+      </view>
+
+      <!-- Department -->
+      <view class="form-group">
+        <text class="form-label">使用部门</text>
+        <picker mode="selector" range="{{departments}}" bindchange="onDeptChange" value="{{deptIndex}}">
+          <view class="form-picker">
+            <text class="{{deptIndex === -1 ? 'picker-placeholder' : ''}}">
+              {{deptIndex === -1 ? '请选择使用部门...' : departments[deptIndex]}}
+            </text>
+            <text class="picker-arrow">▼</text>
+          </view>
+        </picker>
+      </view>
+
+      <!-- Custodian -->
+      <view class="form-group">
+        <text class="form-label">保管领用人</text>
+        <input class="form-input" name="user_name" placeholder="请输入保管领用人姓名" value="{{userName}}" />
+      </view>
+
+      <!-- Description -->
+      <view class="form-group">
+        <text class="form-label">备注说明</text>
+        <textarea class="form-textarea" name="description" placeholder="请输入资产成色、保修期、配置等备注说明信息..." value="{{description}}" style="height: 160rpx;"></textarea>
+      </view>
+
+      <!-- Image upload zone -->
+      <view class="form-group">
+        <text class="form-label">资产实物图 <text class="label-hint">(最多上传5张图片，单张限5MB)</text></text>
+        
+        <view class="image-uploader-grid">
+          <!-- Uploaded images -->
+          <view wx:for="{{imageUrls}}" wx:key="*this" class="uploader-img-wrapper">
+            <image class="uploader-img" src="{{item}}" mode="aspectFill" bindtap="onPreviewImage" data-url="{{item}}"></image>
+            <view class="btn-remove-img flex-center" bindtap="onRemoveImage" data-index="{{index}}">×</view>
+          </view>
+          
+          <!-- Upload Button -->
+          <view class="uploader-btn flex-col flex-center" bindtap="onChooseImage" wx:if="{{imageUrls.length < 5}}">
+            <text class="uploader-btn-icon">+</text>
+            <text class="uploader-btn-text">添加图片</text>
+          </view>
+        </view>
+      </view>
+
+      <button class="btn btn-primary" form-type="submit" style="width: 100%; margin-top: 48rpx; margin-bottom: 40rpx;">
+        <text>保 存</text>
+      </button>
+    </form>
+  </view>
+</view>

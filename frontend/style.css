@@ -2309,3 +2309,131 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     }
 }
 
+/* ==========================================================================
+   14. Pagination Bar Custom Styling (Premium Glassmorphic Layout)
+   ========================================================================== */
+.pagination-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 20px;
+    border-top: 1px solid var(--border-glass);
+    background-color: rgba(255, 255, 255, 0.01);
+    flex-wrap: nowrap; /* 🌟 Never wrap pagination items */
+}
+
+.btn-page {
+    flex-shrink: 0; /* 🌟 Prevent standard page buttons from shrinking */
+}
+
+.btn-page {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-glass);
+    color: var(--text-main);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.btn-page:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--purple);
+    border-color: rgba(139, 92, 246, 0.3);
+    box-shadow: 0 0 8px var(--purple-glow);
+}
+
+.btn-page:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.page-info {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Page Jump Custom Premium Styling */
+.page-jump-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 12px;
+    padding-left: 16px;
+    border-left: 1px solid var(--border-glass);
+    flex-shrink: 0; /* 🌟 Prevent container from shrinking */
+    white-space: nowrap; /* 🌟 Prevent wrapping of text */
+}
+
+.page-jump-container span {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.input-page-jump {
+    width: 50px !important;
+    height: 32px !important;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-glass);
+    border-radius: 6px;
+    color: var(--text-main);
+    font-size: 0.85rem;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    outline: none;
+    transition: var(--transition-fast);
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+.input-page-jump:focus {
+    border-color: var(--purple);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 8px var(--purple-glow);
+}
+
+/* Hide spin buttons */
+.input-page-jump::-webkit-inner-spin-button,
+.input-page-jump::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.input-page-jump {
+    -moz-appearance: textfield;
+}
+
+.btn-page-jump {
+    padding: 6px 12px !important;
+    height: 32px !important;
+    font-size: 0.82rem !important;
+    font-weight: 600;
+    border-radius: 6px;
+    background: rgba(139, 92, 246, 0.1) !important;
+    border-color: rgba(139, 92, 246, 0.2) !important;
+    color: var(--purple) !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.btn-page-jump:hover:not(:disabled) {
+    background: var(--purple) !important;
+    color: #fff !important;
+    box-shadow: 0 0 10px var(--purple-glow) !important;
+}
+

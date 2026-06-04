@@ -25,10 +25,11 @@
     <!-- 1. AUTHENTICATION SECTION (Login / Register) -->
     <div id="auth-section" class="auth-section">
         <div class="auth-card glassmorphism">
-            <div class="auth-header">
-                <div class="brand-logo">
-                    <i class="fa-solid fa-boxes-stacked logo-icon"></i>
-                    <span>汉中电信</span>
+                <div class="brand-logo" style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 20px;">
+                    <div style="width: 80px; height: 52px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <img src="images/telecom_5g.png" alt="中国电信5G" style="width: 130px; height: 130px; object-fit: contain; mix-blend-mode: multiply; flex-shrink: 0;">
+                    </div>
+                    <span style="font-weight: 800; font-size: 1.6rem; letter-spacing: 2px; background: linear-gradient(135deg, var(--purple) 0%, var(--cyan) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;">汉中电信</span>
                 </div>
                 <h2>固定资产管理系统</h2>
                 <p id="auth-subtitle">轻松掌控您的企业固定资产</p>
@@ -166,9 +167,11 @@
     <div id="app-container" class="app-container hidden">
         <!-- SIDEBAR -->
         <aside class="sidebar glassmorphism">
-            <div class="sidebar-brand">
-                <i class="fa-solid fa-boxes-stacked logo-icon"></i>
-                <span>汉中电信固资管理</span>
+            <div class="sidebar-brand" style="display: flex; align-items: center; gap: 6px; padding-bottom: 16px; border-bottom: 1px solid var(--border-glass);">
+                <div style="width: 60px; height: 38px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <img src="images/telecom_5g.png" alt="中国电信5G" style="width: 100px; height: 100px; object-fit: contain; mix-blend-mode: multiply; flex-shrink: 0;">
+                </div>
+                <span style="font-size: 0.95rem; font-weight: 700; white-space: nowrap; background: linear-gradient(135deg, var(--purple) 0%, var(--cyan) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;">汉中电信固资管理</span>
             </div>
             
             <nav class="sidebar-nav">
@@ -383,6 +386,17 @@
                             <!-- Injected by app.js -->
                         </tbody>
                     </table>
+                    <div class="pagination-bar" id="assets-pagination">
+                        <button type="button" class="btn-page" id="assets-page-prev"><i class="fa-solid fa-angle-left"></i> 上一页</button>
+                        <span class="page-info" id="assets-page-info">第 1 / 1 页</span>
+                        <button type="button" class="btn-page" id="assets-page-next">下一页 <i class="fa-solid fa-angle-right"></i></button>
+                        <div class="page-jump-container">
+                            <span class="page-info">跳转至</span>
+                            <input type="number" class="input-page-jump" id="assets-page-jump" min="1" value="1">
+                            <span class="page-info">页</span>
+                            <button type="button" class="btn-page btn-page-jump" id="assets-page-jump-btn">跳转</button>
+                        </div>
+                    </div>
                     <div id="table-empty-state" class="empty-state hidden">
                         <i class="fa-regular fa-hourglass-half empty-icon"></i>
                         <h3>未找到符合条件的资产</h3>
@@ -469,6 +483,17 @@
                             <!-- Injected by app.js -->
                         </tbody>
                     </table>
+                    <div class="pagination-bar" id="history-pagination">
+                        <button type="button" class="btn-page" id="history-page-prev"><i class="fa-solid fa-angle-left"></i> 上一页</button>
+                        <span class="page-info" id="history-page-info">第 1 / 1 页</span>
+                        <button type="button" class="btn-page" id="history-page-next">下一页 <i class="fa-solid fa-angle-right"></i></button>
+                        <div class="page-jump-container">
+                            <span class="page-info">跳转至</span>
+                            <input type="number" class="input-page-jump" id="history-page-jump" min="1" value="1">
+                            <span class="page-info">页</span>
+                            <button type="button" class="btn-page btn-page-jump" id="history-page-jump-btn">跳转</button>
+                        </div>
+                    </div>
                     <div id="approvals-history-empty" class="empty-state hidden">
                         <i class="fa-solid fa-clock-rotate-left empty-icon" style="font-size: 3rem; color: var(--text-muted); opacity: 0.5; margin-bottom: 12px; display: block;"></i>
                         <h3>暂无审批决议历史</h3>
@@ -495,6 +520,17 @@
                             <!-- Injected by app.js -->
                         </tbody>
                     </table>
+                    <div class="pagination-bar" id="user-approvals-pagination">
+                        <button type="button" class="btn-page" id="user-approvals-page-prev"><i class="fa-solid fa-angle-left"></i> 上一页</button>
+                        <span class="page-info" id="user-approvals-page-info">第 1 / 1 页</span>
+                        <button type="button" class="btn-page" id="user-approvals-page-next">下一页 <i class="fa-solid fa-angle-right"></i></button>
+                        <div class="page-jump-container">
+                            <span class="page-info">跳转至</span>
+                            <input type="number" class="input-page-jump" id="user-approvals-page-jump" min="1" value="1">
+                            <span class="page-info">页</span>
+                            <button type="button" class="btn-page btn-page-jump" id="user-approvals-page-jump-btn">跳转</button>
+                        </div>
+                    </div>
                     <div id="approvals-user-empty" class="empty-state hidden">
                         <i class="fa-regular fa-folder-open empty-icon"></i>
                         <h3>暂无审批申请记录</h3>
@@ -538,6 +574,17 @@
                             <!-- Dynamically injected by app.js -->
                         </tbody>
                     </table>
+                    <div class="pagination-bar" id="users-pagination">
+                        <button type="button" class="btn-page" id="users-page-prev"><i class="fa-solid fa-angle-left"></i> 上一页</button>
+                        <span class="page-info" id="users-page-info">第 1 / 1 页</span>
+                        <button type="button" class="btn-page" id="users-page-next">下一页 <i class="fa-solid fa-angle-right"></i></button>
+                        <div class="page-jump-container">
+                            <span class="page-info">跳转至</span>
+                            <input type="number" class="input-page-jump" id="users-page-jump" min="1" value="1">
+                            <span class="page-info">页</span>
+                            <button type="button" class="btn-page btn-page-jump" id="users-page-jump-btn">跳转</button>
+                        </div>
+                    </div>
                     <div id="users-empty" class="empty-state hidden">
                         <i class="fa-solid fa-user-slash empty-icon" style="font-size: 3rem; color: var(--text-muted); opacity: 0.5;"></i>
                         <h3>暂无系统账号记录</h3>

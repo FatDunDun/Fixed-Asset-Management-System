@@ -115,3 +115,83 @@ Featuring a strict frontend-backend decoupled architecture, the frontend is buil
 * **Username**: `admin`
 * **Password**: `admin123`
 *(You are free to sign up new accounts in the Register interface)*
+
+---
+
+## 📱 微信小程序接入与部署指南 (WeChat Mini Program Guide)
+
+本项目已针对微信小程序进行了全面适配改造，支持传统账户登录绑定、微信快捷登录、移动端数据看板统计、扫码查资产、拍照上传图片及移动端审批。
+
+### 一、本地开发与调试步骤
+
+如果你是首次开发微信小程序，请按照以下步骤在您的 Mac 上运行：
+
+#### 1. 准备开发工具
+1. 下载并安装官方 **[微信开发者工具](https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html)**。
+2. （可选）在 **[微信公众平台](https://mp.weixin.qq.com)** 注册一个“小程序”账号，获取您的 `AppID`。如果没有账号，可以使用开发者工具的**测试号（游客模式）**进行开发体验。
+
+#### 2. 导入小程序项目
+1. 打开“微信开发者工具”，点击主界面的 **“导入”** 按钮。
+2. 目录路径选择当前项目下的 **`miniprogram`** 文件夹（即 `/Users/micylt/Desktop/mangeer/miniprogram`）。
+3. AppID 填写您注册得到的 AppID，或者直接点击选择 **“测试号”**（进入游客开发模式），项目名称可自定义为 `固资管家小程序`。
+4. 点击“导入”完成加载。
+
+#### 3. 配置本地开发“不校验”设置（极其重要 ⚠️）
+由于本地 Flask 后端运行在 `https://127.0.0.1:5001` 上并使用自签名的 SSL 证书，微信小程序默认会拦截此类连接。我们需要在工具中将其关闭：
+1. 在微信开发者工具右上角，点击 **“详情”** 按钮。
+2. 在弹出的侧边栏中选择 **“本地设置”**。
+3. 勾选 **“不校验合法域名、web-view（业务域名）、TLS版本以及HTTPS证书”** 选项。
+
+#### 4. 运行后端服务
+在终端中进入项目后端目录，并启动 Flask 后端：
+```bash
+cd /Users/micylt/Desktop/mangeer/backend
+source venv/bin/activate
+python app.py
+```
+后端会开始运行，打印出类似于 `[*] Starting 汉中电信固定资产管理系统 Backend on https://127.0.0.1:5001 ...` 级别的提示。
+
+#### 5. 小程序内测试与绑定
+1. 在开发者工具左侧的“小程序模拟器”中，点击 **“微信一键快捷登录”**。
+2. 因为本地运行，后端会自动启动**沙盒开发模式**，生成一个虚拟的 OpenID。
+3. 模拟器将提示“您的微信账号尚未绑定系统员工账号”。此时在表单中输入系统预设的管理员账户 `admin` / `admin123`（或者员工账号 `staff` / `staff123`），点击 **“绑定并登录”**。
+4. 绑定成功后，即可自动进入工作台看板，查阅数据，体验微信扫码、资产拍照上传等全部功能！
+
+---
+
+### 二、线上正式发布与上线部署
+
+当您准备将系统部署到云端服务器正式对外上线时，需要完成以下工作：
+
+#### 1. 服务器与 HTTPS 证书配置
+- 微信小程序在线上只支持真正的域名通信，不支持 IP 地址，且域名必须配置正规的 CA 商业机构签发的 SSL 证书（HTTPS）。
+- 请在您的云服务器（如腾讯云、阿里云）上部署 Flask 后端，并使用 Nginx 代理域名（如 `https://yourdomain.com`），配置好 HTTPS 证书。
+
+#### 2. 配置后端微信登录环境变量
+在您的云服务器后端运行环境中，配置以下环境变量，使后端能够安全请求微信官方接口获取用户真实 OpenID：
+- `WX_APPID`: 您的小程序 AppID。
+- `WX_SECRET`: 您的小程序 AppSecret（在微信公众平台的 开发管理 -> 开发设置 中获取并保护）。
+
+#### 3. 配置微信小程序后台合法域名白名单
+1. 登录 **[微信公众平台](https://mp.weixin.qq.com)**，进入您小程序的管理后台。
+2. 选择左侧导航栏 **“开发” -> “开发管理” -> “开发设置”**。
+3. 找到 **“服务器域名”** 选项，在 `request合法域名` 和 `uploadFile合法域名` 中添加您的服务器域名（例如 `https://yourdomain.com`）。
+
+#### 4. 修改小程序前端 API 域名指向
+1. 打开小程序项目中的 [miniprogram/app.js](file:///Users/micylt/Desktop/mangeer/miniprogram/app.js) 文件。
+2. 将 `globalData` 中的 `apiBase` 修改为您云服务器的真实 API 接口地址：
+   ```javascript
+   globalData: {
+     apiBase: 'https://yourdomain.com/api', // 改为您线上的真实 HTTPS 域名 api 路径
+     token: '',
+     userInfo: null,
+     openid: ''
+   }
+   ```
+
+#### 5. 编译与上传审核
+1. 在“微信开发者工具”顶部工具栏中，点击 **“上传”** 按钮。
+2. 填写版本号（如 `1.0.0`）与备注（如 `首个版本发布`），点击上传。
+3. 登录小程序管理后台，进入 **“版本管理”**，可以看到您刚刚上传的开发版本。
+4. 点击 **“提交审核”**，等待微信官方审核通过后，即可点击 **“发布”**，所有员工即可在微信中搜索到您的小程序并扫码使用！
+

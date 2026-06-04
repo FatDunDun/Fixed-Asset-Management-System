@@ -97,7 +97,12 @@ const state = {
     sortAscending: false, // Default desc
     deleteAssetId: null,
     uploadedImages: [], // Track uploaded image URLs during modal lifecycle
-    departments: [] // Standardized allowed departments list
+    departments: [], // Standardized allowed departments list
+    assetsPage: 1,
+    approvalsHistoryPage: 1,
+    approvalsUserPage: 1,
+    usersPage: 1,
+    pageSize: 10
 };
 
 // --- DOM References Cache ---
@@ -835,7 +840,7 @@ async function loadAssets() {
     try {
         const assets = await fetchAPI(`/assets?${params.toString()}`);
         state.assets = assets;
-        
+        state.assetsPage = 1; // 重置分页为第一页
         renderAssetsTable();
     } catch (err) {
         console.error("Asset loading failure:", err);
@@ -848,11 +853,32 @@ function renderAssetsTable() {
     if (state.assets.length === 0) {
         DOM.assetsTableBody.parentElement.classList.add('hidden');
         DOM.tableEmptyState.classList.remove('hidden');
+        const paginationBar = document.getElementById('assets-pagination');
+        if (paginationBar) paginationBar.classList.add('hidden');
         return;
     }
     
     DOM.assetsTableBody.parentElement.classList.remove('hidden');
     DOM.tableEmptyState.classList.add('hidden');
+    
+    // 计算分页
+    const totalPages = Math.ceil(state.assets.length / state.pageSize) || 1;
+    if (state.assetsPage > totalPages) state.assetsPage = totalPages;
+    if (state.assetsPage < 1) state.assetsPage = 1;
+    
+    const startIndex = (state.assetsPage - 1) * state.pageSize;
+    const pageData = state.assets.slice(startIndex, startIndex + state.pageSize);
+    
+    // 更新分页条状态
+    const paginationBar = document.getElementById('assets-pagination');
+    if (paginationBar) {
+        paginationBar.classList.toggle('hidden', state.assets.length <= state.pageSize);
+        document.getElementById('assets-page-info').textContent = `第 ${state.assetsPage} / ${totalPages} 页 (共 ${state.assets.length} 条)`;
+        document.getElementById('assets-page-prev').disabled = state.assetsPage === 1;
+        document.getElementById('assets-page-next').disabled = state.assetsPage === totalPages;
+        const jumpInput = document.getElementById('assets-page-jump');
+        if (jumpInput) jumpInput.value = state.assetsPage;
+    }
     
     const categoryBadges = {
         'Electronics': '🔌 电子设备',
@@ -868,7 +894,7 @@ function renderAssetsTable() {
         'Scrapped': { text: '报废处置', class: 'badge-scrapped' }
     };
     
-    state.assets.forEach(asset => {
+    pageData.forEach(asset => {
         const tr = document.createElement('tr');
         tr.id = `row-asset-${asset.id}`;
         
@@ -1354,6 +1380,8 @@ async function loadApprovals() {
     try {
         const approvals = await fetchAPI('/approvals');
         state.approvals = approvals;
+        state.approvalsHistoryPage = 1; // 重置已审批历史页码
+        state.approvalsUserPage = 1;    // 重置普通用户审批列表页码
         
         if (state.role === 'admin') {
             await loadPendingUsers();
@@ -1733,11 +1761,32 @@ function renderApprovals() {
             if (completed.length === 0) {
                 if (approvalsHistoryTableBody) approvalsHistoryTableBody.parentElement.classList.add('hidden');
                 if (approvalsHistoryEmpty) approvalsHistoryEmpty.classList.remove('hidden');
+                const historyPaginationBar = document.getElementById('history-pagination');
+                if (historyPaginationBar) historyPaginationBar.classList.add('hidden');
                 return;
             }
             
             if (approvalsHistoryTableBody) approvalsHistoryTableBody.parentElement.classList.remove('hidden');
             if (approvalsHistoryEmpty) approvalsHistoryEmpty.classList.add('hidden');
+            
+            // 计算分页
+            const totalHistoryPages = Math.ceil(completed.length / state.pageSize) || 1;
+            if (state.approvalsHistoryPage > totalHistoryPages) state.approvalsHistoryPage = totalHistoryPages;
+            if (state.approvalsHistoryPage < 1) state.approvalsHistoryPage = 1;
+            
+            const startHistoryIndex = (state.approvalsHistoryPage - 1) * state.pageSize;
+            const pageHistoryData = completed.slice(startHistoryIndex, startHistoryIndex + state.pageSize);
+            
+            // 更新分页条状态
+            const historyPaginationBar = document.getElementById('history-pagination');
+            if (historyPaginationBar) {
+                historyPaginationBar.classList.toggle('hidden', completed.length <= state.pageSize);
+                document.getElementById('history-page-info').textContent = `第 ${state.approvalsHistoryPage} / ${totalHistoryPages} 页 (共 ${completed.length} 条)`;
+                document.getElementById('history-page-prev').disabled = state.approvalsHistoryPage === 1;
+                document.getElementById('history-page-next').disabled = state.approvalsHistoryPage === totalHistoryPages;
+                const jumpInput = document.getElementById('history-page-jump');
+                if (jumpInput) jumpInput.value = state.approvalsHistoryPage;
+            }
             
             const actionNames = { 'create': '🆕 登记资产', 'update': '📝 属性变更', 'delete': '❌ 注销报废', 'register': '👤 账号注册' };
             const statusBadges = {
@@ -1745,7 +1794,7 @@ function renderApprovals() {
                 'rejected': { text: '🔴 已驳回', class: 'badge-rejected' }
             };
             
-            completed.forEach(appr => {
+            pageHistoryData.forEach(appr => {
                 const tr = document.createElement('tr');
                 const proposed = JSON.parse(appr.proposed_data);
                 const stat = statusBadges[appr.status] || { text: appr.status, class: 'badge-secondary' };
@@ -1785,14 +1834,37 @@ function renderApprovals() {
         DOM.approvalsUserSection.classList.remove('hidden');
         DOM.approvalsUserTableBody.innerHTML = '';
         
-        if (state.approvals.length === 0) {
+        const userApprovals = state.approvals.filter(a => a.action_type !== 'register');
+        
+        if (userApprovals.length === 0) {
             DOM.approvalsUserSection.classList.add('hidden');
             DOM.approvalsUserEmpty.classList.remove('hidden');
+            const userPaginationBar = document.getElementById('user-approvals-pagination');
+            if (userPaginationBar) userPaginationBar.classList.add('hidden');
             return;
         }
         
         DOM.approvalsUserSection.classList.remove('hidden');
         DOM.approvalsUserEmpty.classList.add('hidden');
+        
+        // 计算分页
+        const totalUserPages = Math.ceil(userApprovals.length / state.pageSize) || 1;
+        if (state.approvalsUserPage > totalUserPages) state.approvalsUserPage = totalUserPages;
+        if (state.approvalsUserPage < 1) state.approvalsUserPage = 1;
+        
+        const startUserIndex = (state.approvalsUserPage - 1) * state.pageSize;
+        const pageUserData = userApprovals.slice(startUserIndex, startUserIndex + state.pageSize);
+        
+        // 更新分页条状态
+        const userPaginationBar = document.getElementById('user-approvals-pagination');
+        if (userPaginationBar) {
+            userPaginationBar.classList.toggle('hidden', userApprovals.length <= state.pageSize);
+            document.getElementById('user-approvals-page-info').textContent = `第 ${state.approvalsUserPage} / ${totalUserPages} 页 (共 ${userApprovals.length} 条)`;
+            document.getElementById('user-approvals-page-prev').disabled = state.approvalsUserPage === 1;
+            document.getElementById('user-approvals-page-next').disabled = state.approvalsUserPage === totalUserPages;
+            const jumpInput = document.getElementById('user-approvals-page-jump');
+            if (jumpInput) jumpInput.value = state.approvalsUserPage;
+        }
         
         const actionNames = { 'create': '🆕 登记新资产', 'update': '📝 修改变动', 'delete': '❌ 注销报废' };
         const statusBadges = {
@@ -1801,8 +1873,7 @@ function renderApprovals() {
             'rejected': { text: '🔴 被驳回', class: 'badge-rejected' }
         };
         
-        state.approvals.forEach(appr => {
-            if (appr.action_type === 'register') return; // Don't show register approvals in assets lists
+        pageUserData.forEach(appr => {
             const proposed = JSON.parse(appr.proposed_data);
             const tr = document.createElement('tr');
             const stat = statusBadges[appr.status] || { text: appr.status, class: 'badge-secondary' };
@@ -2071,6 +2142,7 @@ window.loadAllUsers = async function() {
     try {
         const users = await fetchAPI('/admin/users');
         state.systemUsers = users;
+        state.usersPage = 1; // 重置页码为第一页
         renderUsersTable();
     } catch (err) {
         showToast('拉取账户列表失败: ' + err.message, 'error');
@@ -2083,9 +2155,30 @@ function renderUsersTable() {
     
     if (users.length === 0) {
         DOM.usersEmpty.classList.remove('hidden');
+        const paginationBar = document.getElementById('users-pagination');
+        if (paginationBar) paginationBar.classList.add('hidden');
         return;
     }
     DOM.usersEmpty.classList.add('hidden');
+    
+    // 计算分页
+    const totalPages = Math.ceil(users.length / state.pageSize) || 1;
+    if (state.usersPage > totalPages) state.usersPage = totalPages;
+    if (state.usersPage < 1) state.usersPage = 1;
+    
+    const startIndex = (state.usersPage - 1) * state.pageSize;
+    const pageData = users.slice(startIndex, startIndex + state.pageSize);
+    
+    // 更新分页条状态
+    const paginationBar = document.getElementById('users-pagination');
+    if (paginationBar) {
+        paginationBar.classList.toggle('hidden', users.length <= state.pageSize);
+        document.getElementById('users-page-info').textContent = `第 ${state.usersPage} / ${totalPages} 页 (共 ${users.length} 条)`;
+        document.getElementById('users-page-prev').disabled = state.usersPage === 1;
+        document.getElementById('users-page-next').disabled = state.usersPage === totalPages;
+        const jumpInput = document.getElementById('users-page-jump');
+        if (jumpInput) jumpInput.value = state.usersPage;
+    }
     
     const roleBadges = {
         'admin': '<span class="badge badge-admin">管理员</span>',
@@ -2099,7 +2192,7 @@ function renderUsersTable() {
         'rejected': '<span class="badge badge-rejected">🔴 已驳回</span>'
     };
     
-    users.forEach(u => {
+    pageData.forEach(u => {
         const tr = document.createElement('tr');
         
         // Hide delete actions on built-in admin
@@ -2407,11 +2500,175 @@ function startSystemTicker() {
         const hh = String(now.getHours()).padStart(2, '0');
         const min = String(now.getMinutes()).padStart(2, '0');
         const ss = String(now.getSeconds()).padStart(2, '0');
-        DOM.systemTime.textContent = `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+        if (DOM.systemTime) {
+            DOM.systemTime.textContent = `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+        }
     };
-    
     updateTime();
     setInterval(updateTime, 1000);
+}
+
+// Setup pagination click listeners
+function setupPaginationEvents() {
+    // Assets pagination
+    const assetsPrev = document.getElementById('assets-page-prev');
+    const assetsNext = document.getElementById('assets-page-next');
+    if (assetsPrev && assetsNext) {
+        assetsPrev.addEventListener('click', () => {
+            if (state.assetsPage > 1) {
+                state.assetsPage--;
+                renderAssetsTable();
+            }
+        });
+        assetsNext.addEventListener('click', () => {
+            const totalPages = Math.ceil(state.assets.length / state.pageSize) || 1;
+            if (state.assetsPage < totalPages) {
+                state.assetsPage++;
+                renderAssetsTable();
+            }
+        });
+    }
+
+    const assetsJumpBtn = document.getElementById('assets-page-jump-btn');
+    const assetsJumpInput = document.getElementById('assets-page-jump');
+    if (assetsJumpBtn && assetsJumpInput) {
+        const doJump = () => {
+            const val = parseInt(assetsJumpInput.value, 10);
+            const totalPages = Math.ceil(state.assets.length / state.pageSize) || 1;
+            if (val >= 1 && val <= totalPages) {
+                state.assetsPage = val;
+                renderAssetsTable();
+            } else {
+                showToast(`请输入 1 到 ${totalPages} 之间的有效页码！`, 'warning');
+                assetsJumpInput.value = state.assetsPage;
+            }
+        };
+        assetsJumpBtn.addEventListener('click', doJump);
+        assetsJumpInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') doJump();
+        });
+    }
+
+    // Admin Completed History pagination
+    const historyPrev = document.getElementById('history-page-prev');
+    const historyNext = document.getElementById('history-page-next');
+    if (historyPrev && historyNext) {
+        historyPrev.addEventListener('click', () => {
+            if (state.approvalsHistoryPage > 1) {
+                state.approvalsHistoryPage--;
+                renderApprovals();
+            }
+        });
+        historyNext.addEventListener('click', () => {
+            const completed = state.approvals.filter(a => a.status !== 'pending');
+            const totalPages = Math.ceil(completed.length / state.pageSize) || 1;
+            if (state.approvalsHistoryPage < totalPages) {
+                state.approvalsHistoryPage++;
+                renderApprovals();
+            }
+        });
+    }
+
+    const historyJumpBtn = document.getElementById('history-page-jump-btn');
+    const historyJumpInput = document.getElementById('history-page-jump');
+    if (historyJumpBtn && historyJumpInput) {
+        const doJump = () => {
+            const val = parseInt(historyJumpInput.value, 10);
+            const completed = state.approvals.filter(a => a.status !== 'pending');
+            const totalPages = Math.ceil(completed.length / state.pageSize) || 1;
+            if (val >= 1 && val <= totalPages) {
+                state.approvalsHistoryPage = val;
+                renderApprovals();
+            } else {
+                showToast(`请输入 1 到 ${totalPages} 之间的有效页码！`, 'warning');
+                historyJumpInput.value = state.approvalsHistoryPage;
+            }
+        };
+        historyJumpBtn.addEventListener('click', doJump);
+        historyJumpInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') doJump();
+        });
+    }
+
+    // User approvals pagination
+    const userApprPrev = document.getElementById('user-approvals-page-prev');
+    const userApprNext = document.getElementById('user-approvals-page-next');
+    if (userApprPrev && userApprNext) {
+        userApprPrev.addEventListener('click', () => {
+            if (state.approvalsUserPage > 1) {
+                state.approvalsUserPage--;
+                renderApprovals();
+            }
+        });
+        userApprNext.addEventListener('click', () => {
+            const userApprovals = state.approvals.filter(a => a.action_type !== 'register');
+            const totalPages = Math.ceil(userApprovals.length / state.pageSize) || 1;
+            if (state.approvalsUserPage < totalPages) {
+                state.approvalsUserPage++;
+                renderApprovals();
+            }
+        });
+    }
+
+    const userApprJumpBtn = document.getElementById('user-approvals-page-jump-btn');
+    const userApprJumpInput = document.getElementById('user-approvals-page-jump');
+    if (userApprJumpBtn && userApprJumpInput) {
+        const doJump = () => {
+            const val = parseInt(userApprJumpInput.value, 10);
+            const userApprovals = state.approvals.filter(a => a.action_type !== 'register');
+            const totalPages = Math.ceil(userApprovals.length / state.pageSize) || 1;
+            if (val >= 1 && val <= totalPages) {
+                state.approvalsUserPage = val;
+                renderApprovals();
+            } else {
+                showToast(`请输入 1 到 ${totalPages} 之间的有效页码！`, 'warning');
+                userApprJumpInput.value = state.approvalsUserPage;
+            }
+        };
+        userApprJumpBtn.addEventListener('click', doJump);
+        userApprJumpInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') doJump();
+        });
+    }
+
+    // Users pagination
+    const usersPrev = document.getElementById('users-page-prev');
+    const usersNext = document.getElementById('users-page-next');
+    if (usersPrev && usersNext) {
+        usersPrev.addEventListener('click', () => {
+            if (state.usersPage > 1) {
+                state.usersPage--;
+                renderUsersTable();
+            }
+        });
+        usersNext.addEventListener('click', () => {
+            const totalPages = Math.ceil(state.systemUsers.length / state.pageSize) || 1;
+            if (state.usersPage < totalPages) {
+                state.usersPage++;
+                renderUsersTable();
+            }
+        });
+    }
+
+    const usersJumpBtn = document.getElementById('users-page-jump-btn');
+    const usersJumpInput = document.getElementById('users-page-jump');
+    if (usersJumpBtn && usersJumpInput) {
+        const doJump = () => {
+            const val = parseInt(usersJumpInput.value, 10);
+            const totalPages = Math.ceil(state.systemUsers.length / state.pageSize) || 1;
+            if (val >= 1 && val <= totalPages) {
+                state.usersPage = val;
+                renderUsersTable();
+            } else {
+                showToast(`请输入 1 到 ${totalPages} 之间的有效页码！`, 'warning');
+                usersJumpInput.value = state.usersPage;
+            }
+        };
+        usersJumpBtn.addEventListener('click', doJump);
+        usersJumpInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') doJump();
+        });
+    }
 }
 
 // Startup Initializations
@@ -2421,6 +2678,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupAuthEvents();
     setupNavigation();
     setupAssetEvents();
+    setupPaginationEvents();
     
     // Check Active Session Cache
     if (state.token && state.username) {

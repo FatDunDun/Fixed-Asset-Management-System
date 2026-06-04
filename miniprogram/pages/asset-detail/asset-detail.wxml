@@ -1,0 +1,105 @@
+<!-- pages/asset-detail/asset-detail.wxml -->
+<view class="container">
+  <!-- Asset Images Swiper -->
+  <view class="swiper-container card">
+    <swiper class="image-swiper" indicator-dots="{{imageUrls.length > 1}}" autoplay="false" duration="300" wx:if="{{imageUrls.length > 0}}">
+      <swiper-item wx:for="{{imageUrls}}" wx:key="*this">
+        <image class="swiper-image" src="{{item}}" mode="aspectFit" bindtap="onPreviewImage" data-url="{{item}}"></image>
+      </swiper-item>
+    </swiper>
+    
+    <!-- Empty image placeholder -->
+    <view class="empty-image flex-col flex-center" wx:else>
+      <text class="empty-image-icon">🖼️</text>
+      <text class="empty-image-text">暂无实物图片</text>
+    </view>
+  </view>
+
+  <!-- Asset Details Card -->
+  <view class="card detail-card flex-col">
+    <view class="detail-header flex-row">
+      <text class="detail-name">{{asset.name}}</text>
+      <text class="badge badge-{{asset.statusClass}}">{{asset.statusText}}</text>
+    </view>
+
+    <view class="price-row">
+      <text class="price-symbol">¥</text>
+      <text class="price-val">{{asset.formattedPrice}}</text>
+    </view>
+
+    <!-- Details Grid -->
+    <view class="details-grid">
+      <view class="grid-row flex-row">
+        <text class="grid-label">资产编码</text>
+        <view class="grid-value flex-row flex-1">
+          <text class="code-textSelectable">{{asset.asset_code}}</text>
+          <text class="btn-copy" bindtap="onCopyCode">复制</text>
+        </view>
+      </view>
+
+      <view class="grid-row flex-row">
+        <text class="grid-label">资产分类</text>
+        <text class="grid-value flex-1">{{categoryText}}</text>
+      </view>
+
+      <view class="grid-row flex-row">
+        <text class="grid-label">采购日期</text>
+        <text class="grid-value flex-1">{{asset.purchase_date}}</text>
+      </view>
+
+      <view class="grid-row flex-row">
+        <text class="grid-label">使用部门</text>
+        <text class="grid-value flex-1">{{asset.department || '未分配使用部门'}}</text>
+      </view>
+
+      <view class="grid-row flex-row">
+        <text class="grid-label">保管领用人</text>
+        <text class="grid-value flex-1">{{asset.user_name || '无保管领用人'}}</text>
+      </view>
+
+      <view class="grid-row flex-col" style="border: none; padding-bottom: 0;">
+        <text class="grid-label" style="margin-bottom: 8rpx;">备注说明</text>
+        <text class="grid-desc">{{asset.description || '暂无备注说明信息。'}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Timeline Time machine card -->
+  <view class="card timeline-card">
+    <view class="card-title">资产历史变更时光机</view>
+    
+    <view class="timeline-list">
+      <view wx:for="{{history}}" wx:key="id" class="timeline-item flex-row">
+        <view class="timeline-left flex-col">
+          <view class="timeline-dot bg-{{item.typeClass}}"></view>
+          <view class="timeline-line"></view>
+        </view>
+        <view class="timeline-right flex-col flex-1">
+          <view class="timeline-header flex-row">
+            <text class="timeline-action">{{item.actionText}}</text>
+            <text class="timeline-time">{{item.created_at}}</text>
+          </view>
+          <text class="timeline-operator">操作人: {{item.operator}}</text>
+          <text class="timeline-details">{{item.details}}</text>
+        </view>
+      </view>
+
+      <view wx:if="{{history.length === 0}}" class="empty-state-small flex-center">
+        <text class="text-muted">暂无历史时光记录</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Bottom Actions -->
+  <view class="action-footer flex-row" wx:if="{{asset.status !== 'Scrapped'}}">
+    <button class="btn btn-secondary flex-1" bindtap="onEditAsset">修改信息</button>
+    <button class="btn btn-danger flex-1" bindtap="onDeleteAsset" style="margin-left: 20rpx;">
+      {{isAdmin ? '直接注销' : '申请报废'}}
+    </button>
+  </view>
+
+  <!-- Scrapped disabled warning -->
+  <view class="scrapped-alert card" wx:else>
+    <text class="scrapped-alert-text">⚠️ 该资产处于「报废处置」状态，生命周期已终结，系统锁定不允许对其进行修改与删除操作。</text>
+  </view>
+</view>

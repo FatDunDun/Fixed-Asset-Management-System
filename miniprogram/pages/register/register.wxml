@@ -1,0 +1,111 @@
+<!-- pages/register/register.wxml -->
+<view class="container">
+  <view class="card register-card">
+    <view class="register-header flex-row" style="align-items: center; margin-bottom: 20rpx;">
+      <view style="width: 100rpx; height: 64rpx; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-right: 16rpx; flex-shrink: 0;">
+        <image src="/images/telecom_5g.png" mode="aspectFit" style="height: 160rpx; width: 160rpx; mix-blend-mode: multiply; flex-shrink: 0;"></image>
+      </view>
+      <view class="flex-col">
+        <view class="register-title" style="margin-bottom: 0;">新账号注册</view>
+        <text style="font-size: 20rpx; color: var(--text-muted); font-weight: 500;">汉中电信固定资产管理</text>
+      </view>
+    </view>
+    <view class="register-subtitle">提交注册申请后，需要管理员在后台审批通过后方可登录系统。</view>
+
+    <form bindsubmit="onSubmitRegister">
+      <!-- Username -->
+      <view class="form-group">
+        <text class="form-label required">用户名</text>
+        <input class="form-input" name="username" placeholder="建议使用拼音或英文" />
+      </view>
+
+      <!-- Real Name -->
+      <view class="form-group">
+        <text class="form-label required">真实姓名</text>
+        <input class="form-input" name="realname" placeholder="请与身份证姓名一致" />
+      </view>
+
+      <!-- Phone -->
+      <view class="form-group">
+        <text class="form-label required">手机号</text>
+        <input class="form-input" name="phone" type="number" placeholder="11位手机号码" maxlength="11" />
+      </view>
+
+      <!-- Department -->
+      <view class="form-group">
+        <text class="form-label required">所属部门</text>
+        <picker mode="selector" range="{{departments}}" bindchange="onDeptChange">
+          <view class="form-picker">
+            <text class="{{deptIndex === -1 ? 'picker-placeholder' : ''}}">
+              {{deptIndex === -1 ? '点击选择部门...' : departments[deptIndex]}}
+            </text>
+            <text class="picker-arrow">▼</text>
+          </view>
+        </picker>
+      </view>
+
+      <!-- ID Card -->
+      <view class="form-group">
+        <text class="form-label required">身份证号</text>
+        <input class="form-input" name="idcard" placeholder="18位居民身份证号码" maxlength="18" />
+      </view>
+
+      <!-- Password -->
+      <view class="form-group">
+        <text class="form-label required">设置密码</text>
+        <input class="form-input" name="password" password placeholder="请输入密码" bindinput="onPasswordInput" />
+      </view>
+
+      <!-- Confirm Password -->
+      <view class="form-group">
+        <text class="form-label required">确认密码</text>
+        <input class="form-input" name="confirmPassword" password placeholder="请再次输入密码" bindinput="onConfirmPasswordInput" />
+      </view>
+
+      <!-- Password Strength Meter -->
+      <view class="strength-card">
+        <view class="strength-header flex-row">
+          <text class="strength-label">密码强度:</text>
+          <text class="strength-value text-{{strengthClass}}">{{strengthText}}</text>
+        </view>
+        <view class="strength-bar-wrapper">
+          <view class="strength-bar bg-{{strengthClass}}" style="width: {{strengthScore}}%;"></view>
+        </view>
+        <view class="requirements-grid">
+          <view class="req-item flex-row {{reqs.length ? 'text-success' : 'text-muted'}}">
+            <icon type="{{reqs.length ? 'success_no_circle' : 'circle'}}" size="12" class="req-icon"></icon>
+            <text>长度至少8位</text>
+          </view>
+          <view class="req-item flex-row {{reqs.upper ? 'text-success' : 'text-muted'}}">
+            <icon type="{{reqs.upper ? 'success_no_circle' : 'circle'}}" size="12" class="req-icon"></icon>
+            <text>大写字母</text>
+          </view>
+          <view class="req-item flex-row {{reqs.lower ? 'text-success' : 'text-muted'}}">
+            <icon type="{{reqs.lower ? 'success_no_circle' : 'circle'}}" size="12" class="req-icon"></icon>
+            <text>小写字母</text>
+          </view>
+          <view class="req-item flex-row {{reqs.number ? 'text-success' : 'text-muted'}}">
+            <icon type="{{reqs.number ? 'success_no_circle' : 'circle'}}" size="12" class="req-icon"></icon>
+            <text>数字</text>
+          </view>
+          <view class="req-item flex-row {{reqs.special ? 'text-success' : 'text-muted'}}">
+            <icon type="{{reqs.special ? 'success_no_circle' : 'circle'}}" size="12" class="req-icon"></icon>
+            <text>特殊符号</text>
+          </view>
+          <view class="req-item flex-row {{reqsMatch ? 'text-success' : 'text-muted'}}">
+            <icon type="{{reqsMatch ? 'success_no_circle' : 'circle'}}" size="12" class="req-icon"></icon>
+            <text>两次密码一致</text>
+          </view>
+        </view>
+      </view>
+
+      <button class="btn btn-primary" form-type="submit" disabled="{{!formValid}}" style="width: 100%; margin-top: 36rpx;">
+        <text>提交注册申请</text>
+      </button>
+    </form>
+
+    <view class="register-footer flex-row" bindtap="goToLogin">
+      <text class="footer-link">已有账号？返回登录</text>
+    </view>
+  </view>
+</view>

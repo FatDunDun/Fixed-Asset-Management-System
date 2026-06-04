@@ -161,6 +161,7 @@ def init_db():
         department TEXT,
         status TEXT NOT NULL DEFAULT 'pending',
         role TEXT NOT NULL DEFAULT 'user',
+        wechat_openid TEXT UNIQUE,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     """)
@@ -244,6 +245,19 @@ def init_db():
         # Create UNIQUE INDEX to enforce uniqueness
         cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_user_id ON users(user_id)")
         print("[*] Created unique index idx_user_id on users.")
+        conn.commit()
+
+    # Check if wechat_openid column exists in users table, if not, add it
+    cursor.execute("PRAGMA table_info(users)")
+    u_cols = [col['name'] for col in cursor.fetchall()]
+    if 'wechat_openid' not in u_cols:
+        print("[*] Migrating users table: adding wechat_openid column...")
+        cursor.execute("ALTER TABLE users ADD COLUMN wechat_openid TEXT")
+        conn.commit()
+        
+        # Create UNIQUE INDEX to enforce uniqueness of wechat_openid
+        cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_wechat_openid ON users(wechat_openid)")
+        print("[*] Created unique index idx_wechat_openid on users.")
         conn.commit()
         
     # Check if approval_code column exists, if not, add it [NEW]

@@ -1,0 +1,269 @@
+/* pages/approvals/approvals.wxss */
+
+.tabs-bar {
+  padding: 10rpx;
+  display: flex;
+  margin-bottom: 28rpx;
+}
+
+.tab-item {
+  flex: 1;
+  text-align: center;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 24rpx 0;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.tab-item.active {
+  color: var(--primary);
+}
+
+.tab-item.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 25%;
+  right: 25%;
+  height: 6rpx;
+  background-color: var(--primary);
+  border-radius: 4rpx;
+}
+
+.badge-tab {
+  margin-left: 10rpx;
+  font-size: 18rpx;
+  padding: 2rpx 12rpx;
+  height: 30rpx;
+  min-width: 30rpx;
+  line-height: 26rpx;
+  border-radius: 16rpx;
+  background-color: var(--danger) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4rpx 10rpx rgba(220, 38, 38, 0.2);
+}
+
+/* Approval Card */
+.approval-card {
+  padding: 36rpx;
+  margin-bottom: 28rpx;
+}
+
+.card-header {
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1rpx solid var(--border-glass);
+  padding-bottom: 20rpx;
+  margin-bottom: 24rpx;
+}
+
+.time-text {
+  font-size: 22rpx;
+  color: var(--text-muted);
+}
+
+.card-body {
+  margin-bottom: 28rpx;
+}
+
+.info-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-size: 26rpx;
+  margin-bottom: 16rpx;
+}
+
+.info-label {
+  width: 150rpx;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.info-val {
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+.info-val.bold {
+  font-weight: 700;
+  font-size: 28rpx;
+  color: var(--text-main);
+}
+
+.info-val.font-mono {
+  font-family: monospace;
+  letter-spacing: 1rpx;
+}
+
+/* Diff box */
+.diff-box {
+  background-color: #F8FAFC;
+  border: 1rpx solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 20rpx 24rpx;
+  margin-top: 20rpx;
+}
+
+.diff-title {
+  font-size: 22rpx;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 12rpx;
+  display: block;
+}
+
+.diff-line {
+  font-size: 22rpx;
+  padding: 8rpx 0;
+  align-items: center;
+}
+
+.diff-field {
+  width: 130rpx;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.diff-old {
+  color: var(--danger);
+  text-decoration: line-through;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150rpx;
+}
+
+.diff-arrow {
+  color: var(--text-muted);
+  margin: 0 16rpx;
+}
+
+.diff-new {
+  color: var(--success);
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180rpx;
+}
+
+.card-footer {
+  border-top: 1rpx solid var(--border-glass);
+  padding-top: 28rpx;
+  margin-top: 28rpx;
+}
+
+.card-footer .btn {
+  margin: 0;
+}
+
+/* History Card */
+.history-card {
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+}
+
+.history-header {
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1rpx dashed var(--border-glass);
+  padding-bottom: 16rpx;
+  margin-bottom: 20rpx;
+}
+
+.history-body {
+  font-size: 24rpx;
+}
+
+.history-body .info-label {
+  width: 140rpx;
+}
+
+.review-notes {
+  font-style: italic;
+  color: var(--text-secondary);
+  background-color: #F8FAFC;
+  padding: 12rpx 20rpx;
+  border-radius: var(--radius-sm);
+  border: 1rpx solid var(--border-glass);
+  flex: 1;
+}
+
+/* Comment Dialog Modal */
+.comment-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.4);
+  z-index: 1000;
+  padding: 40rpx;
+  backdrop-filter: blur(8px);
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 600rpx;
+  padding: 48rpx;
+  margin-bottom: 0;
+  box-shadow: 0 20rpx 50rpx rgba(15, 23, 42, 0.15);
+}
+
+.modal-content .modal-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 16rpx;
+  letter-spacing: 1rpx;
+}
+
+.modal-content .modal-desc {
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  margin-bottom: 28rpx;
+}
+
+.modal-content .form-textarea {
+  width: 100%;
+  height: 180rpx;
+  background-color: #F8FAFC;
+  border: 1rpx solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 20rpx;
+  font-size: 26rpx;
+  color: var(--text-main);
+  margin-bottom: 36rpx;
+}
+
+.modal-buttons {
+  justify-content: space-between;
+}
+
+.modal-buttons .btn {
+  margin: 0;
+  height: 88rpx;
+  line-height: 88rpx;
+}
+
+/* Custom overlay pop animation */
+.animate-pop {
+  animation: pop 0.25s ease-out;
+}
+
+@keyframes pop {
+  0% { transform: scale(0.92); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.empty-icon {
+  font-size: 100rpx;
+  color: var(--success);
+  margin-bottom: 24rpx;
+  display: block;
+}

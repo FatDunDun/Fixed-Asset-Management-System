@@ -114,7 +114,7 @@ ALLOWED_DEPARTMENTS = [
 
 # Configure Flask app to serve the frontend folder as static content
 app = Flask(__name__, static_folder='../frontend', static_url_path='')
-CORS(app, resources={r"/api/*": {"origins": ["http://127.0.0.1:5000", "http://localhost:5000"]}}) # Allow CORS restricted strictly to loopback host
+CORS(app, resources={r"/api/*": {"origins": "*"}}) # Allow CORS for all origins (useful for WeChat developer tools and web client)
 
 @app.after_request
 def add_security_headers(response):
@@ -265,12 +265,20 @@ def register():
             'department': department
         })
         
+        openid = data.get('openid') # optional openid associated with registration
         user_uid = generate_unique_user_id(cursor)
-        cursor.execute(
-            """INSERT INTO users (user_id, username, password, real_name, phone, id_card, department, status, role) 
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (user_uid, username, hashed, real_name, phone, id_card, department, status, role)
-        )
+        if openid:
+            cursor.execute(
+                """INSERT INTO users (user_id, username, password, real_name, phone, id_card, department, status, role, wechat_openid) 
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (user_uid, username, hashed, real_name, phone, id_card, department, status, role, openid)
+            )
+        else:
+            cursor.execute(
+                """INSERT INTO users (user_id, username, password, real_name, phone, id_card, department, status, role) 
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (user_uid, username, hashed, real_name, phone, id_card, department, status, role)
+            )
         approval_code = generate_unique_approval_code(cursor, user_uid)
         
         cursor.execute(
@@ -377,6 +385,124 @@ def forgot_password():
     finally:
         conn.close()
 
+# --- WeChat Mini Program Authentication APIs ---
+
+import urllib.request
+import urllib.parse
+import json
+
+@app.route('/api/wechat/login', methods=['POST'])
+def wechat_login():
+    data = request.get_json()
+    if not data or not data.get('code'):
+        return jsonify({'message': '微信临时登录凭证 code 缺失！'}), 400
+        
+    code = data.get('code')
+    appid = os.environ.get('WX_APPID')
+    secret = os.environ.get('WX_SECRET')
+    
+    openid = None
+    if appid and secret:
+        try:
+            url = f"https://api.weixin.qq.com/sns/jscode2session?appid={appid}&secret={secret}&js_code={code}&grant_type=authorization_code"
+            req = urllib.request.Request(url)
+            with urllib.request.urlopen(req, timeout=5) as response:
+                res_body = response.read().decode('utf-8')
+                res_json = json.loads(res_body)
+                openid = res_json.get('openid')
+                if not openid:
+                    err_msg = res_json.get('errmsg', 'WeChat authentication failed')
+                    return jsonify({'message': f'微信登录失败: {err_msg}'}), 400
+        except Exception as e:
+            return jsonify({'message': f'微信接口调用失败: {str(e)}'}), 500
+    else:
+        # Development Sandbox Mode
+        openid = f"mock_openid_{code}"
+        print(f"[*] WX_APPID/WX_SECRET not set. Using Sandbox Mode with openid: {openid}")
+        
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT * FROM users WHERE wechat_openid = ?", (openid,))
+        user = cursor.fetchone()
+        
+        if user:
+            status = user['status']
+            if status == 'pending':
+                return jsonify({'message': '您的账户申请正在审批中，请联系管理员。'}), 403
+            elif status == 'rejected':
+                return jsonify({'message': '您的账户申请已被管理员拒绝。'}), 403
+            elif status == 'suspended':
+                return jsonify({'message': '您的账户已被管理员禁用，请联系管理员启用！'}), 403
+                
+            token = generate_token(user['username'], user['role'], user['real_name'])
+            return jsonify({
+                'bound': True,
+                'token': token,
+                'username': user['username'],
+                'real_name': user['real_name'],
+                'role': user['role']
+            }), 200
+        else:
+            return jsonify({
+                'bound': False,
+                'openid': openid,
+                'message': '该微信账号尚未绑定系统员工账号，请进行绑定或注册。'
+            }), 200
+    except Exception as e:
+        return jsonify({'message': f'服务器数据库错误: {str(e)}'}), 500
+    finally:
+        conn.close()
+
+@app.route('/api/wechat/bind', methods=['POST'])
+def wechat_bind():
+    data = request.get_json()
+    if not data or not data.get('username') or not data.get('password') or not data.get('openid'):
+        return jsonify({'message': '用户名、密码和微信 OpenID 均为必填项！'}), 400
+        
+    username = data.get('username').strip()
+    password = data.get('password')
+    openid = data.get('openid').strip()
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+        user = cursor.fetchone()
+        
+        if user and verify_password(user['password'], password):
+            status = user['status']
+            if status == 'pending':
+                return jsonify({'message': '该账户申请仍在审批中，暂时无法绑定。'}), 403
+            elif status == 'rejected':
+                return jsonify({'message': '该账户申请已被拒绝，无法绑定。'}), 403
+            elif status == 'suspended':
+                return jsonify({'message': '该账户已被禁用，无法绑定。'}), 403
+                
+            # Check if this openid is already bound to another user
+            cursor.execute("SELECT * FROM users WHERE wechat_openid = ? AND username != ?", (openid, username))
+            existing_bound = cursor.fetchone()
+            if existing_bound:
+                return jsonify({'message': f'该微信已绑定了其他账号 ({existing_bound["username"]})，请先解绑或联系管理员！'}), 400
+                
+            # Bind the openid
+            cursor.execute("UPDATE users SET wechat_openid = ? WHERE username = ?", (openid, username))
+            conn.commit()
+            
+            token = generate_token(user['username'], user['role'], user['real_name'])
+            return jsonify({
+                'token': token,
+                'username': user['username'],
+                'real_name': user['real_name'],
+                'role': user['role']
+            }), 200
+        else:
+            return jsonify({'message': '用户名或密码不正确！'}), 401
+    except Exception as e:
+        return jsonify({'message': f'服务器数据库错误: {str(e)}'}), 500
+    finally:
+        conn.close()
+
 # --- Asset Management APIs (CRUD) ---
 
 @app.route('/api/assets', methods=['GET'])
@@ -457,6 +583,88 @@ def get_assets():
             })
             
         return jsonify(assets), 200
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+    finally:
+        conn.close()
+
+@app.route('/api/assets/detail/<string:asset_code>', methods=['GET'])
+@token_required
+def get_asset_by_code(asset_code):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        current_user = request.current_user
+        role = current_user.get('role', 'user')
+        username = current_user.get('sub')
+        
+        cursor.execute("SELECT * FROM assets WHERE asset_code = ?", (asset_code,))
+        r = cursor.fetchone()
+        if not r:
+            return jsonify({'message': '未找到该资产！'}), 404
+            
+        if role != 'admin':
+            cursor.execute("SELECT department FROM users WHERE username = ?", (username,))
+            u_row = cursor.fetchone()
+            user_dept = u_row['department'] if u_row else None
+            if r['department'] != user_dept:
+                return jsonify({'message': '无权查看其他部门的资产！'}), 403
+                
+        return jsonify({
+            'id': r['id'],
+            'asset_code': r['asset_code'],
+            'name': r['name'],
+            'category': r['category'],
+            'price': r['price'],
+            'purchase_date': r['purchase_date'],
+            'status': r['status'],
+            'department': r['department'],
+            'user_name': r['user_name'],
+            'description': r['description'],
+            'image_url': r['image_url'],
+            'created_at': r['created_at']
+        }), 200
+    except Exception as e:
+        return jsonify({'message': f'Server error: {str(e)}'}), 500
+    finally:
+        conn.close()
+
+@app.route('/api/assets/id/<int:asset_id>', methods=['GET'])
+@token_required
+def get_asset_by_id(asset_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        current_user = request.current_user
+        role = current_user.get('role', 'user')
+        username = current_user.get('sub')
+        
+        cursor.execute("SELECT * FROM assets WHERE id = ?", (asset_id,))
+        r = cursor.fetchone()
+        if not r:
+            return jsonify({'message': '未找到该资产！'}), 404
+            
+        if role != 'admin':
+            cursor.execute("SELECT department FROM users WHERE username = ?", (username,))
+            u_row = cursor.fetchone()
+            user_dept = u_row['department'] if u_row else None
+            if r['department'] != user_dept:
+                return jsonify({'message': '无权查看其他部门的资产！'}), 403
+                
+        return jsonify({
+            'id': r['id'],
+            'asset_code': r['asset_code'],
+            'name': r['name'],
+            'category': r['category'],
+            'price': r['price'],
+            'purchase_date': r['purchase_date'],
+            'status': r['status'],
+            'department': r['department'],
+            'user_name': r['user_name'],
+            'description': r['description'],
+            'image_url': r['image_url'],
+            'created_at': r['created_at']
+        }), 200
     except Exception as e:
         return jsonify({'message': f'Server error: {str(e)}'}), 500
     finally:
@@ -1502,6 +1710,26 @@ def delete_user_by_admin(username):
         conn.close()
 
 if __name__ == '__main__':
-    # Start on port 5000, multi-threaded for responsiveness
-    print("[*] Starting 汉中电信固定资产管理系统 Backend on http://127.0.0.1:5000 ...")
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    import subprocess
+    
+    # Automatically generate self-signed SSL cert if it doesn't exist
+    backend_dir = os.path.dirname(os.path.abspath(__file__))
+    cert_path = os.path.join(backend_dir, 'cert.pem')
+    key_path = os.path.join(backend_dir, 'key.pem')
+
+    if not os.path.exists(cert_path) or not os.path.exists(key_path):
+        print("[*] Generating self-signed SSL certificate for HTTPS secure connection...")
+        try:
+            subprocess.run([
+                'openssl', 'req', '-x509', '-newkey', 'rsa:2048', '-nodes',
+                '-keyout', key_path, '-out', cert_path, '-days', '365',
+                '-subj', '/CN=127.0.0.1'
+            ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            print("[*] SSL certificate successfully generated!")
+        except Exception as e:
+            print(f"[!] Failed to auto-generate SSL cert: {e}")
+
+    # For local development and mobile debugging, run on HTTP to avoid self-signed SSL certificate issues on physical phones.
+    print("[*] Starting 汉中电信固定资产管理系统 Backend on http://0.0.0.0:5001 ...")
+    app.run(host='0.0.0.0', port=5001, debug=True)
+

@@ -1,0 +1,90 @@
+<!-- pages/assets/assets.wxml -->
+<view class="container">
+  <!-- Search Header -->
+  <view class="search-header flex-row">
+    <view class="search-box flex-1 flex-row">
+      <icon type="search" size="16" class="search-icon"></icon>
+      <input class="search-input" placeholder="搜索资产名称 / 编码 / 保管人..." value="{{searchQuery}}" bindconfirm="onSearchConfirm" bindinput="onSearchInput" confirm-type="search"/>
+      <icon wx:if="{{searchQuery}}" type="clear" size="16" class="clear-icon" bindtap="onClearSearch"></icon>
+    </view>
+    <button class="btn-search" bindtap="onSearchConfirm">搜索</button>
+  </view>
+
+  <!-- Filter Section (Horizontal Scroll Tags) -->
+  <view class="filter-section flex-col">
+    <!-- Categories scroll -->
+    <scroll-view class="filter-scroll" scroll-x="true" show-scrollbar="false">
+      <view class="filter-row flex-row">
+        <view wx:for="{{categories}}" wx:key="value" class="filter-tag {{selectedCategory === item.value ? 'active' : ''}}" bindtap="onCategorySelect" data-value="{{item.value}}">
+          <text>{{item.label}}</text>
+        </view>
+      </view>
+    </scroll-view>
+
+    <!-- Status scroll -->
+    <scroll-view class="filter-scroll" scroll-x="true" show-scrollbar="false" style="margin-top: 16rpx;">
+      <view class="filter-row flex-row">
+        <view wx:for="{{statuses}}" wx:key="value" class="filter-tag {{selectedStatus === item.value ? 'active' : ''}}" bindtap="onStatusSelect" data-value="{{item.value}}">
+          <text>{{item.label}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- Sorting Bar -->
+  <view class="sort-bar flex-row">
+    <text class="sort-title">排序方式:</text>
+    <picker mode="selector" range="{{sortFields}}" range-key="label" bindchange="onSortChange">
+      <view class="sort-picker flex-row">
+        <text>{{sortFields[selectedSortIndex].label}}</text>
+        <text class="arrow">▼</text>
+      </view>
+    </picker>
+    <view class="sort-order flex-row" bindtap="onToggleSortOrder">
+      <text class="order-text">{{sortOrder === 'desc' ? '降序' : '升序'}}</text>
+      <text class="order-icon">{{sortOrder === 'desc' ? '⬇️' : '⬆️'}}</text>
+    </view>
+  </view>
+
+  <!-- Assets List -->
+  <view class="assets-list flex-col">
+    <view wx:for="{{assets}}" wx:key="id" class="card asset-card flex-row" bindtap="onAssetClick" data-id="{{item.id}}" data-code="{{item.asset_code}}" hover-class="card-hover">
+      <!-- Thumbnail Image -->
+      <view class="asset-img-container">
+        <image class="asset-thumb" src="{{item.image_url ? (apiDomain + item.image_url) : '/images/list.png'}}" mode="aspectFill"></image>
+      </view>
+      
+      <!-- Info -->
+      <view class="asset-info flex-col flex-1">
+        <view class="asset-header-row flex-row">
+          <text class="asset-name">{{item.name}}</text>
+          <text class="badge badge-{{item.statusClass}}">{{item.statusText}}</text>
+        </view>
+        <text class="asset-code">编码: {{item.asset_code}}</text>
+        <view class="asset-meta flex-row">
+          <text class="asset-dept">部门: {{item.department || '未分配'}}</text>
+          <text class="asset-user" wx:if="{{item.user_name}}">保管人: {{item.user_name}}</text>
+        </view>
+        <view class="asset-footer-row flex-row">
+          <text class="asset-price">¥{{item.formattedPrice}}</text>
+          <text class="asset-date">{{item.purchase_date}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- Empty State -->
+    <view wx:if="{{assets.length === 0 && !loading}}" class="empty-state">
+      <image class="empty-icon" src="/images/list.png"></image>
+      <text class="empty-title">未找到符合条件的资产</text>
+      <text class="empty-desc">请尝试调整搜索关键字或筛选条件，或者点击工作台登记一台新资产。</text>
+    </view>
+
+    <!-- Loading & End Indicators -->
+    <view wx:if="{{loading}}" class="loading-more flex-center">
+      <text>加载中...</text>
+    </view>
+    <view wx:if="{{noMoreData && assets.length > 0}}" class="end-indicator flex-center">
+      <text>— 已经到底啦 —</text>
+    </view>
+  </view>
+</view>
